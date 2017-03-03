@@ -49,7 +49,6 @@ def rhs(u,v,h):
     #diff_v = param['nu_B']*LLv.dot(v)                      
     
     # symmetric stress tensor S = (S11, S12, S12, -S11), store only S11, S12
-    # increased accuracy of the stencil at the boundary by using G2vx, G2uy
     S = (dudx-dvdy,dvdx + dudy)
     hS = (h*S[0],h_q*S[1])
 
