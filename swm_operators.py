@@ -4,7 +4,6 @@
 # TODO set up some operators without 1/dx,1/dy to avoid division by large number
 # TODO and then multiplication of it again (single precision issue)
  
-
 def set_grad_mat():
     """ Sets up the gradient matrices and makes them available as global variables.
     All matrices are set up as column sparse row.
@@ -21,7 +20,6 @@ def set_grad_mat():
     
     tic = tictoc.time()
     global GTx,GTy,Gux,Guy,Gvx,Gvy,Gqy,Gqx
-    global G2vx,G2uy  # as above but with higher order stencils on the boundary
     
     # for readability unpack the param dictionary
     dx,dy = param['dx'],param['dy']
@@ -29,9 +27,6 @@ def set_grad_mat():
     NT,Nu,Nv,Nq = param['NT'],param['Nu'],param['Nv'],param['Nq']
     
     # tangential velocity boundary condition
-    # lbc = 0 is free-slip; 0<lbc<2 is partial slip; lbc = 2 is no slip; lbc > 2 is strong slip
-    # TODO maybe allow this as a choseable parameter again
-    param['lbc'] = 2.   # not possible to change because of higher order stencils in G2vx,G2uy
     lbc = param['lbc']
 
     # index used to delete the rows that correspond to a derivate across the east-west boundaries, i.e. to remove the periodicity in x
@@ -82,49 +77,6 @@ def set_grad_mat():
     sparse.dia_matrix((-d2[::-1],-(nx+1)),shape=((Nq,sj))).tocsr()[:,-np.array(indx2)[::-1]-1])/dx
     Gqx = -Gqx.T.tocsr()
     
-    ## HIGHER ORDER GRADIENTS - 2nd ORDER also on the boundary
-    # stencil taken from Shchepetkin and O'Brien (1996), Mon. Wea. Review, equation (18)
-    lateral_stencil = [4, -1,1/5.]
-    
-    # G2vx the 2nd order (also on the boundaries) gradient from v- on q-points
-    block1 = np.array(lateral_stencil) # corresponding to the derivative at westernmost q-point
-    block2 = np.array([[-1,1],]*(nx-1)) # corresponding to the interior derivatives
-    block3 = -block1[::-1] # corresponding to the derivative at easternmost q-point
-    
-    datablock = np.hstack((block1,block2.flatten(),block3))
-    data = np.array([datablock,]*(ny-1)).flatten() # data array
-    
-    lb = len(block1)
-    row_ind_1st_row = np.hstack(([0,]*lb,np.arange(1,nx).repeat(2),[nx,]*lb)) + (nx+1)
-    row_ind = (np.array([row_ind_1st_row,]*(ny-1)).T + np.arange(ny-1)*(nx+1)).T.flatten()
-    
-    # column indices
-    col_ind_1st_row = np.hstack((range(lb),np.arange(nx).repeat(2)[1:-1],nx-np.arange(lb,0,-1)))
-    col_ind = (np.array([col_ind_1st_row,]*(ny-1)).T + np.arange(ny-1)*nx).T.flatten()
-    
-    G2vx = sparse.csr_matrix((data,(row_ind,col_ind)),shape=(Nq,Nv)) / dx
-    
-    # G2uy
-    block1 = np.array(lateral_stencil*(nx-1))    # derivative at southern boundary
-    block2 = np.array([-1,1]*(nx-1)*(ny-1))     # derivative at interior points
-    block3 = -block1[::-1]      # derivative at northern boundary
-    
-    data = np.hstack((block1,block2,block3))
-    
-    lb = int(len(block1)/(nx-1))
-    row_ind_1st_row = np.arange(1,nx).repeat(lb)
-    row_ind_last_row = Nq - row_ind_1st_row[::-1] - 1
-    row_ind_2nd_row = np.arange(1,nx).repeat(2)
-    row_ind_int = (np.array([row_ind_2nd_row,]*(ny-1)).T + np.arange(1,ny)*(nx+1)).T.flatten()
-    row_ind = np.hstack((row_ind_1st_row,row_ind_int,row_ind_last_row))
-
-    col_ind_1st_row = np.arange((nx-1)*lb).reshape(lb,nx-1).flatten('F')
-    col_ind_int = (np.array([np.arange((nx-1)*(ny-1)),]*2).T + np.array([0,nx-1])).flatten()
-    col_ind_last_row = Nu - col_ind_1st_row[::-1] - 1
-    col_ind = np.hstack((col_ind_1st_row,col_ind_int,col_ind_last_row))
-    
-    G2uy = sparse.csr_matrix((data,(row_ind,col_ind)),shape=(Nq,Nu)) / dy
-    
     # set data type
     Gux = Gux.astype(param['dat_type'])
     Guy = Guy.astype(param['dat_type'])
@@ -134,8 +86,6 @@ def set_grad_mat():
     GTy = GTy.astype(param['dat_type'])
     Gqx = Gqx.astype(param['dat_type'])
     Gqy = Gqy.astype(param['dat_type'])
-    G2uy = G2uy.astype(param['dat_type'])
-    G2vx = G2vx.astype(param['dat_type'])
         
     #feedback on time
     output_txt('Gradients in %.4fs' % (tictoc.time() - tic))
@@ -160,8 +110,8 @@ def set_lapl_mat():
     global LLu, LLv, LLT
     
     # harmonic operators
-    Lu = GTx.dot(Gux) + Gqy.dot(G2uy)   
-    Lv = Gqx.dot(G2vx) + GTy.dot(Gvy)
+    Lu = GTx.dot(Gux) + Gqy.dot(Guy)   
+    Lv = Gqx.dot(Gvx) + GTy.dot(Gvy)
     LT = Gux.dot(GTx) + Gvy.dot(GTy)
     Lq = Gvx.dot(Gqx) + Guy.dot(Gqy)
     

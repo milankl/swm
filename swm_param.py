@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]   #TODO allow inhomogeneous H
     
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 5             # number of days to integrate
+    param['Ndays'] = 10             # number of days to integrate
     
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
@@ -26,11 +26,14 @@ def set_param():
     param['init_run_id'] = 0                 # only for starting from ncfile
     param['init_interpolation'] = 1          # allow initial interpolation in case grids do not match
     
-    # time stepping allowed: RK3 (max cfl .6), RK4 (max cfl .9), AB1-5 (max cfl .2 or less)
+    # boundary conditions
+    param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
+    
+    # time stepping allowed: RK3 (max cfl .6), RK4 (max cfl .9, best performance!), AB1-5 (max cfl .2 or less)
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 1             # or 0 for no data storage
+    param['output'] = 0             # or 0 for no data storage
     param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters
@@ -243,6 +246,7 @@ def init_interpolation(u_0,v_0,h_0):
     """ Performs an initial interpolation in case the grids do not match. """
     #TODO change boundary conditions applied based on the old param dictionary
     #TODO sofar its only supporting the no-slip case
+    #TODO do not read x,y from param.npy but from ncfile
     from scipy.interpolate import RegularGridInterpolator as RIG
     
     # padding following the boundary conditions

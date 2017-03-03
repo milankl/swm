@@ -10,8 +10,7 @@ def rhs(u,v,h):
     and q = (v_x - u_y + f)/h the potential vorticity
     
     using the enstrophy and energy conserving scheme (Arakawa and Lamb, 1981) and
-    a friction term from Shchepetkin and O'Brien (1996) including their 
-    increased accuracy of the derivative at the boundary.
+    a lateral mixing term from Shchepetkin and O'Brien (1996).
     """
     
     #TODO using h as prognostic variable instead of eta might be convenient
@@ -51,14 +50,14 @@ def rhs(u,v,h):
     
     # symmetric stress tensor S = (S11, S12, S12, -S11), store only S11, S12
     # increased accuracy of the stencil at the boundary by using G2vx, G2uy
-    S = (dudx-dvdy,G2vx.dot(v) + G2uy.dot(u))
+    S = (dudx-dvdy,dvdx + dudy)
     hS = (h*S[0],h_q*S[1])
 
     diff_u = (GTx.dot(hS[0]) + Gqy.dot(hS[1])) / h_u
     diff_v = (Gqx.dot(hS[1]) - GTy.dot(hS[0])) / h_v
 
     # biharmonic stress tensor R = (R11, R12, R12, -R11), store only R11, R12
-    R = (Gux.dot(diff_u) - Gvy.dot(diff_v), G2vx.dot(diff_v) + G2uy.dot(diff_u))
+    R = (Gux.dot(diff_u) - Gvy.dot(diff_v), Gvx.dot(diff_v) + Guy.dot(diff_u))
     hR = (h*R[0],h_q*R[1])
     
     bidiff_u = param['nu_B']*(GTx.dot(hR[0]) + Gqy.dot(hR[1])) / h_u
