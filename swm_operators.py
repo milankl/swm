@@ -1,4 +1,10 @@
 ## FUNCTIONs TO SET UP ALL OPERATORS
+
+# TODO setting up of operators more readable!
+# TODO set up some operators without 1/dx,1/dy to avoid division by large number
+# TODO and then multiplication of it again (single precision issue)
+ 
+
 def set_grad_mat():
     """ Sets up the gradient matrices and makes them available as global variables.
     All matrices are set up as column sparse row.
@@ -24,6 +30,7 @@ def set_grad_mat():
     
     # tangential velocity boundary condition
     # lbc = 0 is free-slip; 0<lbc<2 is partial slip; lbc = 2 is no slip; lbc > 2 is strong slip
+    # TODO maybe allow this as a choseable parameter again
     param['lbc'] = 2.   # not possible to change because of higher order stencils in G2vx,G2uy
     lbc = param['lbc']
 

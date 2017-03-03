@@ -108,9 +108,10 @@ def feedback_ini(u,v,h,t):
         output_param()      # store the param dictionnary
         
         # Store information in txt file
+        # TODO output maybe all scalar values in param dictionary?
         output_txt('Integrating %.1f days with dt=%.2f min in %i time steps' % (param['Ndays'],dt/60.,param['Nt']))    
-        output_txt('and eddy viscosities A = %4.1f, B = %4.1f' % (param['A'],param['B']))
-        output_txt('Time integration scheme is '+param['scheme']+' with CFL = %.2f on %i threads.' % (param['cfl'],param['num_threads']))
+        output_txt('and eddy viscosities A = %4.1f, B = %4.1f' % (param['nu_A'],param['nu_B']))
+        output_txt('Time integration scheme is '+param['scheme']+' with CFL = %.2f' % param['cfl'])
         output_txt('')
         output_txt('Starting shallow water model on '+tictoc.asctime())
         print(('Starting shallow water model run %i on ' % param['run_id'])+tictoc.asctime())

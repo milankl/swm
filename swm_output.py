@@ -7,7 +7,7 @@
 def output_nc_ini():
     """ Initialise the netCDF4 file."""
     
-    param['output_i'] = 0   # output index
+    param['output_j'] = 0   # output index
         
     # store files, dimensions and variables in dictionnaries
     ncu = dict()
@@ -20,6 +20,7 @@ def output_nc_ini():
     nch['file'] = Dataset(param['output_runpath']+'/h.nc','w')
     
     # write general attributes
+    # TODO store more information in nc-files
     for ncfile in [ncu,ncv,nch]:
         ncfile['file'].history = 'Created ' + tictoc.ctime(tictoc.time())
         ncfile['file'].description = 'Data from: Shallow-water model in double gyre configuration.'
@@ -38,46 +39,41 @@ def output_nc_ini():
     # create dimensions
     ncu['xdim'] = ncu['file'].createDimension('x',param['nx']-1)
     ncu['ydim'] = ncu['file'].createDimension('y',param['ny'])
-    ncu['tdim'] = ncu['file'].createDimension('t',None)      # time is unlimited dimension
+    ncu['tdim'] = ncu['file'].createDimension('t',param['output_tlen'])      # time is unlimited dimension
 
     ncv['xdim'] = ncv['file'].createDimension('x',param['nx'])
     ncv['ydim'] = ncv['file'].createDimension('y',param['ny']-1)
-    ncv['tdim'] = ncv['file'].createDimension('t',None)      # time is unlimited dimension
+    ncv['tdim'] = ncv['file'].createDimension('t',param['output_tlen'])      # time is unlimited dimension
     
     nch['xdim'] = nch['file'].createDimension('x',param['nx'])
     nch['ydim'] = nch['file'].createDimension('y',param['ny'])
-    nch['tdim'] = nch['file'].createDimension('t',None)      # time is unlimited dimension
+    nch['tdim'] = nch['file'].createDimension('t',param['output_tlen'])      # time is unlimited dimension
     
     # create variables
-    p = 'f4' # precision
-    fill_value = -999999
+    p = 'f4' # 32-bit precision storing, or f8 for 64bit
     for ncfile,var in zip([ncu,ncv,nch],['u','v','h']):
-        ncfile['t'] = ncfile['file'].createVariable('t',p,('t',),zlib=True,fletcher32=True)
+        ncfile['t'] = ncfile['file'].createVariable('t','i8',('t',),zlib=True,fletcher32=True)
         ncfile['x'] = ncfile['file'].createVariable('x',p,('x',),zlib=True,fletcher32=True)
         ncfile['y'] = ncfile['file'].createVariable('y',p,('y',),zlib=True,fletcher32=True)
-        ncfile[var] = ncfile['file'].createVariable(var,p,('t','y','x'),fill_value=fill_value,zlib=True,fletcher32=True)
+        ncfile[var] = ncfile['file'].createVariable(var,p,('t','y','x'),zlib=True,fletcher32=True)
     
     # write units
     for ncfile in [ncu,ncv,nch]:
         ncfile['t'].units = 's'
-        ncfile['t'].fullname = 'time'
+        ncfile['t'].long_name = 'time'
         ncfile['x'].units = 'm'
-        ncfile['x'].fullname = 'spatial dimension x'
+        ncfile['x'].long_name = 'x'
         ncfile['y'].units = 'm'
-        ncfile['y'].fullname = 'spatial dimension y'
+        ncfile['y'].long_name = 'y'
     
     ncu['u'].units = 'm/s'
     ncv['v'].units = 'm/s'
     nch['h'].units = 'm'
-    
-    ncu['u'].missing_value = fill_value
-    ncv['v'].missing_value = fill_value
-    nch['h'].missing_value = fill_value
 
     # write dimensions
     for ncfile,var in zip([ncu,ncv,nch],['u','v','T']):
-        ncfile['x'] = param['x_'+var]
-        ncfile['y'] = param['y_'+var]
+        ncfile['x'][:] = param['x_'+var]
+        ncfile['y'][:] = param['y_'+var]
         
     # make globally available
     global ncfiles
@@ -89,16 +85,16 @@ def output_nc_ini():
 def output_nc(u,v,h,t):
     """ Extend u,v,h fields on every nth time step """
     # output index j
-    j = param['output_i']   # for convenience
+    j = param['output_j']   # for convenience
 
     for ncfile in ncfiles:
         ncfile['t'][j] = t
     
     ncfiles[0]['u'][j,:,:] = u2mat(u)
     ncfiles[1]['v'][j,:,:] = v2mat(v)
-    ncfiles[2]['h'][j,:,:] = h2mat(h-H) # store actually eta
+    ncfiles[2]['h'][j,:,:] = h2mat(h)
     
-    param['output_i'] += 1
+    param['output_j'] += 1
     
 def output_nc_fin():
     """ Finalise the output netCDF4 file."""
@@ -112,9 +108,9 @@ def output_nc_fin():
 def readable_secs(secs):
     """ Returns a human readable string representing seconds in terms of days, hours, minutes, seconds. """
     
-    days = np.floor(secs/3600./24.)
-    hours = np.floor((secs/3600.) % 24)
-    minutes = np.floor((secs/60.) % 60)
+    days = np.floor(secs/3600/24)
+    hours = np.floor((secs/3600) % 24)
+    minutes = np.floor((secs/60) % 60)
     seconds = np.floor(secs%3600%60)
 
     if days > 0:

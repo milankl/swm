@@ -18,15 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Hopefully, there will be soon a documentation available.
 """
 
-from __future__ import print_function
-path = '/home/mkloewer/python/swm/'
+from __future__ import print_function       # tested with python 3.5.2 and 2.7.12
+path = '/home/mkloewer/github/swm/'
 
 # import modules
 import os; os.chdir(path)
-import numpy as np
-from scipy import sparse
+import numpy as np                          # version 1.11.3
+from scipy import sparse                    # version 0.18.1
 import time as tictoc
-from netCDF4 import Dataset
+from netCDF4 import Dataset                 # version 1.2.4, hdf5 version 1.8.17
 import glob
 import zipfile
 
