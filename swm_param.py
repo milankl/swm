@@ -107,7 +107,6 @@ def set_coriolis():
     nx = param['nx']
     Ly = param['Ly']
     
-    # rotation rate of earth
     omega = 2*np.pi/(24.*3600.)     # Earth's angular frequency [s**-1]
     R = 6.371e6                     # Earth's radius [m]
     

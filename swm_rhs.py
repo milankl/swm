@@ -45,8 +45,8 @@ def rhs(u,v,h):
     
     ## LATERAL MIXING OPERATOR
     # crude but simple bi-harmonic mixing
-    #diff_u = param['nu_B']*LLu.dot(u)
-    #diff_v = param['nu_B']*LLv.dot(v)                      
+    #bidiff_u = param['nu_B']*LLu.dot(u)
+    #bidiff_v = param['nu_B']*LLv.dot(v)                      
     
     # symmetric stress tensor S = (S11, S12, S12, -S11), store only S11, S12
     S = (dudx-dvdy,dvdx + dudy)
