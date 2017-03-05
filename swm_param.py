@@ -7,8 +7,8 @@ def set_param():
     param = dict()
     
     ## parameters
-    param['nx'] = 128               # number of grid points in x-direction
-    param['ny'] = 128               # number of grid points in y-direction
+    param['nx'] = 32               # number of grid points in x-direction
+    param['ny'] = 32               # number of grid points in y-direction
     
     param['Lx'] = 3840e3            # basin width L [meters]
     param['Ly'] = 3840e3            # north-south basin extent [meters]
@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]   #TODO allow inhomogeneous H
     
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 10             # number of days to integrate
+    param['Ndays'] = 30*365             # number of days to integrate
     
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
@@ -33,7 +33,7 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 0             # or 0 for no data storage
+    param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters
