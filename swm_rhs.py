@@ -2,23 +2,20 @@
 def rhs(u,v,h):
     """ Set of equations:
     
-    u_t = qhv - p_x + Fx + Mx(u,v)
-    v_t = -qhu - p_y + My(u,v)
+    u_t = qhv - p_x + Fx + Mx(u,v) - bottom_friction
+    v_t = -qhu - p_y + My(u,v)  - bottom_friction
     h_t = -(uh)_x - (vh)_y
     
     with p = .5*(u**2 + v**2) + gh, the bernoulli potential
     and q = (v_x - u_y + f)/h the potential vorticity
     
     using the enstrophy and energy conserving scheme (Arakawa and Lamb, 1981) and
-    a lateral mixing term from Shchepetkin and O'Brien (1996).
+    a biharmonic lateral mixing term based on Shchepetkin and O'Brien (1996).
     """
-    
-    #TODO using h as prognostic variable instead of eta might be convenient
-    #TODO however, using single precision small changes around H might lack precision
-    #TODO compared to changes around 0...
     
     #TODO param[nu_B] is large, applying the biharmonic creates tiny values (as dx^4 is large)
     #TODO think about a way to avoid possibly involved rounding errors especially with single precision
+    #TODO might be efficiently only possible for dx=dy
     
     h_u = ITu.dot(h)    # h on u-grid
     h_v = ITv.dot(h)    # h on v-grid    
@@ -32,8 +29,15 @@ def rhs(u,v,h):
     dvdx = Gvx.dot(v)
     dvdy = Gvy.dot(v)
     
-    q = (f_q + dvdx - dudy) / h_q                           # potential vorticity q
-    p = .5*(IuT.dot(u**2) + IvT.dot(v**2)) + param['g']*h   # Bernoulli potential p
+    KE = IuT.dot(u**2) + IvT.dot(v**2)  # kinetic energy without .5-factor
+    
+    q = (f_q + dvdx - dudy) / h_q       # potential vorticity q
+    p = .5*KE + param['g']*h            # Bernoulli potential p
+    
+    ## BOTTOM FRICTION: quadratic drag
+    sqrtKE = np.sqrt(KE)
+    bfric_u = param['c_D']/param['H']*ITu.dot(sqrtKE)*u
+    bfric_v = param['c_D']/param['H']*ITv.dot(sqrtKE)*v
     
     ## ADVECTION
     # Sadourny, 1975 enstrophy conserving scheme.
@@ -59,12 +63,12 @@ def rhs(u,v,h):
     R = (Gux.dot(diff_u) - Gvy.dot(diff_v), Gvx.dot(diff_v) + Guy.dot(diff_u))
     hR = (h*R[0],h_q*R[1])
     
-    bidiff_u = param['nu_B']*(GTx.dot(hR[0]) + Gqy.dot(hR[1])) / h_u
-    bidiff_v = param['nu_B']*(Gqx.dot(hR[1]) - GTy.dot(hR[0])) / h_v
+    bidiff_u = -param['nu_B']*(GTx.dot(hR[0]) + Gqy.dot(hR[1])) / h_u
+    bidiff_v = -param['nu_B']*(Gqx.dot(hR[1]) - GTy.dot(hR[0])) / h_v
     
-    ## adding the terms to the right hand side
-    rhs_u = adv_u - GTx.dot(p) + Fx + bidiff_u
-    rhs_v = adv_v - GTy.dot(p) + bidiff_v
+    ## RIGHT-HAND SIDE: ADD TERMS
+    rhs_u = adv_u - GTx.dot(p) + Fx + bidiff_u - bfric_u
+    rhs_v = adv_v - GTy.dot(p) + bidiff_v - bfric_v
     rhs_h = -Gux.dot(U) - Gvy.dot(V)
     
     return rhs_u, rhs_v, rhs_h

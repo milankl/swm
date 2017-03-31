@@ -19,7 +19,7 @@ Hopefully, there will be soon a documentation available.
 """
 
 from __future__ import print_function       # tested with python 3.5.2 and 2.7.12
-path = '/home/mkloewer/github/swm/'
+path = '/home/mkloewer/github/swm/'         # change here
 
 # import modules
 import os; os.chdir(path)

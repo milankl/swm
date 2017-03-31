@@ -7,8 +7,8 @@ def set_param():
     param = dict()
     
     ## parameters
-    param['nx'] = 32               # number of grid points in x-direction
-    param['ny'] = 32               # number of grid points in y-direction
+    param['nx'] = 128               # number of grid points in x-direction
+    param['ny'] = 128               # number of grid points in y-direction
     
     param['Lx'] = 3840e3            # basin width L [meters]
     param['Ly'] = 3840e3            # north-south basin extent [meters]
@@ -17,17 +17,17 @@ def set_param():
     param['H'] = 500.               # water depth [m]   #TODO allow inhomogeneous H
     
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 30*365             # number of days to integrate
+    param['Ndays'] = 5*365          # number of days to integrate
     
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
     # initial conditions
     param['initial_conditions'] = 'rest'     # 'rest' or 'ncfile'
     param['init_run_id'] = 0                 # only for starting from ncfile
-    param['init_interpolation'] = 1          # allow initial interpolation in case grids do not match
+    param['init_interpolation'] = 0          # allow initial interpolation in case grids do not match
     
     # boundary conditions
-    param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
+    param['lbc'] = 2                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
     
     # time stepping allowed: RK3 (max cfl .6), RK4 (max cfl .9, best performance!), AB1-5 (max cfl .2 or less)
     param['scheme'] = 'RK4'
@@ -38,7 +38,7 @@ def set_param():
     
     ## SET UP derived parameters
     set_grid()
-    set_eddy_viscosity()
+    set_friction()
     set_coriolis()
     set_timestep()
     set_output()
@@ -282,11 +282,13 @@ def init_interpolation(u_0,v_0,h_0):
     
     return u_0,v_0,h_0
     
-def set_eddy_viscosity():
+def set_friction():
     """ linear scaling of constant viscosity coefficients based on
     
         nu_A = 540 m**2/s at dx = 30km."""
+        
     param['nu_A'] = 128*540./param['min_nxny']              # harmonic mixing coefficient
-    param['nu_B'] = -param['nu_A']*param['max_dxdy']**2     # biharmonic mixing coefficient
+    param['nu_B'] = param['nu_A']*param['max_dxdy']**2      # biharmonic mixing coefficient
     
- 
+    param['c_D'] = 5e-6                                     # bottom friction coefficient
+    param['C_D'] = param['c_D']/param['H']
