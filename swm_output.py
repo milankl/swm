@@ -39,15 +39,15 @@ def output_nc_ini():
     # create dimensions
     ncu['xdim'] = ncu['file'].createDimension('x',param['nx']-1)
     ncu['ydim'] = ncu['file'].createDimension('y',param['ny'])
-    ncu['tdim'] = ncu['file'].createDimension('t',param['output_tlen'])      # time is unlimited dimension
+    ncu['tdim'] = ncu['file'].createDimension('t',param['output_tlen'])
 
     ncv['xdim'] = ncv['file'].createDimension('x',param['nx'])
     ncv['ydim'] = ncv['file'].createDimension('y',param['ny']-1)
-    ncv['tdim'] = ncv['file'].createDimension('t',param['output_tlen'])      # time is unlimited dimension
+    ncv['tdim'] = ncv['file'].createDimension('t',param['output_tlen'])
     
     nch['xdim'] = nch['file'].createDimension('x',param['nx'])
     nch['ydim'] = nch['file'].createDimension('y',param['ny'])
-    nch['tdim'] = nch['file'].createDimension('t',param['output_tlen'])      # time is unlimited dimension
+    nch['tdim'] = nch['file'].createDimension('t',param['output_tlen'])
     
     # create variables
     p = 'f4' # 32-bit precision storing, or f8 for 64bit
