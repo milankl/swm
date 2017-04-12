@@ -22,9 +22,9 @@ def set_param():
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
     # initial conditions
-    param['initial_conditions'] = 'rest'     # 'rest' or 'ncfile'
+    param['initial_conditions'] = 'ncfile'     # 'rest' or 'ncfile'
     param['init_run_id'] = 0                 # only for starting from ncfile
-    param['init_interpolation'] = 0          # allow initial interpolation in case grids do not match
+    param['init_interpolation'] = 1          # allow initial interpolation in case grids do not match
     
     # boundary conditions
     param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
@@ -234,7 +234,26 @@ def initial_conditions():
         output_txt('Starting from last state of run %04i' % param['init_run_id'])
         
         if param['init_interpolation']:
-            u_0,v_0,h_0 = init_interpolation(u_0,v_0,h_0)
+            param_old = dict()
+            param_old['lbc'] = init_ncu.lbc     # get boundary condition
+            
+            # get old grid
+            param_old['x_T'] = init_nch.variables['x'][:]
+            param_old['y_T'] = init_nch.variables['y'][:]
+            
+            param_old['x_u'] = init_ncu.variables['x'][:]
+            param_old['y_u'] = init_ncu.variables['y'][:]
+            
+            param_old['x_v'] = init_ncv.variables['x'][:]
+            param_old['y_v'] = init_ncv.variables['y'][:]
+            
+            param_old['Lx'] = init_nch.Lx
+            param_old['Ly'] = init_nch.Ly
+            
+            param_old['nx'] = init_nch.nx
+            param_old['ny'] = init_nch.ny
+            
+            u_0,v_0,h_0 = init_interpolation(u_0,v_0,h_0,param_old)
             
         else:
             u_0 = u_0.flatten().astype(param['dat_type'])
@@ -243,20 +262,23 @@ def initial_conditions():
     
     return u_0,v_0,h_0
     
-def init_interpolation(u_0,v_0,h_0):
+def init_interpolation(u_0,v_0,h_0,param_old):
     """ Performs an initial interpolation in case the grids do not match. """
-    #TODO change boundary conditions applied based on the old param dictionary
-    #TODO sofar its only supporting the no-slip case
-    #TODO do not read x,y from param.npy but from ncfile
-    from scipy.interpolate import RegularGridInterpolator as RIG
+    from scipy.interpolate import RegularGridInterpolator as RGI
     
-    # padding following the boundary conditions
-    u_0 = np.pad(u_0,1,'constant')  # kinematic boundary condition and no-slip
-    v_0 = np.pad(v_0,1,'constant')  
+    # padding following the tangential boundary conditions (no-slip/freeslip)
+    u_0 = np.pad(u_0,((1,1),(0,0)),'edge')
+    u_0[[0,-1],:] = (1-param_old['lbc']/2.)*u_0[[0,-1],:]
+    
+    v_0 = np.pad(v_0,((0,0),(1,1)),'edge')
+    v_0[:,[0,-1]] = (1-param_old['lbc']/2.)*v_0[:,[0,-1]]
+    
+    u_0 = np.pad(u_0,((0,0),(1,1)),'constant')  # kinematic bc
+    v_0 = np.pad(v_0,((1,1),(0,0)),'constant')
+
     h_0 = np.pad(h_0,1,'edge')  # no gradients of h across boundaries
     
     # padding also for x,y grid
-    param_old = np.load(initpath+'/param.npy').all()
     x_u_old = np.hstack((0,param_old['x_u'],param_old['Lx']))
     y_u_old = np.hstack((0,param_old['y_u'],param_old['Ly']))
     
@@ -267,18 +289,18 @@ def init_interpolation(u_0,v_0,h_0):
     y_T_old = np.hstack((0,param_old['y_T'],param_old['Ly']))
 
     # setting up the interpolation functions
-    RIG_u = RIG((y_u_old,x_u_old),u_0)
-    RIG_v = RIG((y_v_old,x_v_old),v_0)
-    RIG_h = RIG((y_T_old,x_T_old),h_0)
+    RGI_u = RGI((y_u_old,x_u_old),u_0)
+    RGI_v = RGI((y_v_old,x_v_old),v_0)
+    RGI_h = RGI((y_T_old,x_T_old),h_0)
     
     xx_T,yy_T = np.meshgrid(param['x_T'],param['y_T'])
     xx_u,yy_u = np.meshgrid(param['x_u'],param['y_u'])
     xx_v,yy_v = np.meshgrid(param['x_v'],param['y_v'])
     
     # receive the interpolated initial conditions
-    u_0 = RIG_u((yy_u.flatten(),xx_u.flatten())).astype(param['dat_type'])
-    v_0 = RIG_v((yy_v.flatten(),xx_v.flatten())).astype(param['dat_type'])
-    h_0 = RIG_h((yy_T.flatten(),xx_T.flatten())).astype(param['dat_type'])
+    u_0 = RGI_u((yy_u.flatten(),xx_u.flatten())).astype(param['dat_type'])
+    v_0 = RGI_v((yy_v.flatten(),xx_v.flatten())).astype(param['dat_type'])
+    h_0 = RGI_h((yy_T.flatten(),xx_T.flatten())).astype(param['dat_type'])
     
     output_txt('Interpolation of the initial conditions from a %i x %i grid.' % (param_old['nx'],param_old['ny']))
     
