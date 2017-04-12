@@ -24,7 +24,7 @@ def set_param():
     # initial conditions
     param['initial_conditions'] = 'ncfile'     # 'rest' or 'ncfile'
     param['init_run_id'] = 0                 # only for starting from ncfile
-    param['init_interpolation'] = 1          # allow initial interpolation in case grids do not match
+    param['init_interpolation'] = 0          # allow initial interpolation in case grids do not match
     
     # boundary conditions
     param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
