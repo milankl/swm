@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]   #TODO allow inhomogeneous H
     
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 5*365          # number of days to integrate
+    param['Ndays'] = 3              # number of days to integrate
     
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
@@ -27,13 +27,13 @@ def set_param():
     param['init_interpolation'] = 0          # allow initial interpolation in case grids do not match
     
     # boundary conditions
-    param['lbc'] = 2                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
+    param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
     
     # time stepping allowed: RK3 (max cfl .6), RK4 (max cfl .9, best performance!), AB1-5 (max cfl .2 or less)
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 1             # or 0 for no data storage
+    param['output'] = 0             # or 0 for no data storage
     param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters

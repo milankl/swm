@@ -18,15 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Hopefully, there will be soon a documentation available.
 """
 
-from __future__ import print_function       # tested with python 3.5.2 and 2.7.12
-path = '/home/mkloewer/github/swm/'         # change here
+from __future__ import print_function       # tested with python 3.6 and 2.7.12
+path = '/home/kloewer/github/swm/'          # change here
 
 # import modules
 import os; os.chdir(path)
 import numpy as np                          # version 1.11.3
 from scipy import sparse                    # version 0.18.1
 import time as tictoc
-from netCDF4 import Dataset                 # version 1.2.4, hdf5 version 1.8.17
+from netCDF4 import Dataset                 # version 1.2.4, hdf5 version 1.8.17, hdf4 version 4.2.12
 import glob
 import zipfile
 
