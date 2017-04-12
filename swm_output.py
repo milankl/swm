@@ -15,26 +15,21 @@ def output_nc_ini():
     nch = dict()
 
     # creating the netcdf files
-    ncu['file'] = Dataset(param['output_runpath']+'/u.nc','w')
-    ncv['file'] = Dataset(param['output_runpath']+'/v.nc','w')
-    nch['file'] = Dataset(param['output_runpath']+'/h.nc','w')
+    ncformat = 'NETCDF4'
+    ncu['file'] = Dataset(param['output_runpath']+'/u.nc','w',format=ncformat)
+    ncv['file'] = Dataset(param['output_runpath']+'/v.nc','w',format=ncformat)
+    nch['file'] = Dataset(param['output_runpath']+'/h.nc','w',format=ncformat)
     
     # write general attributes
-    # TODO store more information in nc-files
     for ncfile in [ncu,ncv,nch]:
         ncfile['file'].history = 'Created ' + tictoc.ctime(tictoc.time())
         ncfile['file'].description = 'Data from: Shallow-water model in double gyre configuration.'
         ncfile['file'].details = 'Cartesian coordinates, beta-plane approximation, Arakawa C-grid'
-        ncfile['file'].resolution = '%i x %i grid points' % (param['nx'],param['ny'])
-        ncfile['file'].domain_size = '%ikm x %ikm' % (param['Lx']*1e-3,param['Ly']*1e-3 )
-        ncfile['file'].dx_dy = 'dx = '+str(param['dx']*1e-3)+'km, dy = '+str(param['dy']*1e-3)+'km'
-        ncfile['file'].centered_latitude = str(param['lat_0'])+' deg N'
-        ncfile['file'].time_step = 'dt = %.4fs' % param['dt']
-        ncfile['file'].integration_length = '%.1idays' % (param['Nt']*param['dt']/3600./24.)
-        ncfile['file'].integratin_steps = param['Nt']
-        ncfile['file'].time_scheme = param['scheme']
-        ncfile['file'].cfl_number = param['cfl']
-        ncfile['file'].nc_restart_from_run = param['init_run_id']
+        
+        # all param ints floats and strings as global attribute
+        for key in param.keys():
+            if (type(param[key]) is int) or (type(param[key]) is float) or (type(param[key]) is str):
+                ncfile['file'].setncattr(key,param[key])
         
     # create dimensions
     ncu['xdim'] = ncu['file'].createDimension('x',param['nx']-1)
@@ -52,6 +47,7 @@ def output_nc_ini():
     # create variables
     p = 'f4' # 32-bit precision storing, or f8 for 64bit
     for ncfile,var in zip([ncu,ncv,nch],['u','v','h']):
+        # store time as integers as measured in seconds and gets large
         ncfile['t'] = ncfile['file'].createVariable('t','i8',('t',),zlib=True,fletcher32=True)
         ncfile['x'] = ncfile['file'].createVariable('x',p,('x',),zlib=True,fletcher32=True)
         ncfile['y'] = ncfile['file'].createVariable('y',p,('y',),zlib=True,fletcher32=True)
@@ -83,7 +79,7 @@ def output_nc_ini():
     
     
 def output_nc(u,v,h,t):
-    """ Extend u,v,h fields on every nth time step """
+    """ Writes u,v,h fields on every nth time step """
     # output index j
     j = param['output_j']   # for convenience
 
@@ -102,7 +98,7 @@ def output_nc_fin():
     for ncfile in ncfiles:
         ncfile['file'].close()
     
-    output_txt('Output written in '+param['runfolder']+'.')
+    output_txt('All output written in '+param['runfolder']+'.')
 
 ## STORE INFO in TXT FILE
 def readable_secs(secs):

@@ -33,7 +33,7 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 0             # or 0 for no data storage
+    param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters
@@ -107,7 +107,10 @@ def set_coriolis():
     nx = param['nx']
     Ly = param['Ly']
     
-    omega = 2*np.pi/(24.*3600.)     # Earth's angular frequency [s**-1]
+    Tsid = 24.*3600.*365.25/366.25  # sidereal day [s]
+    omega = 2*np.pi/Tsid            # Earth's angular frequency [s**-1]
+    #TODO replace by the following for simplicity
+    #omega = 2*np.pi/(24.*3600.)     # Earth's angular frequency [s**-1]
     R = 6.371e6                     # Earth's radius [m]
     
     f_0 = 2*omega*np.sin(param['lat_0']*np.pi/180.)
@@ -190,11 +193,10 @@ def set_output():
         
         param['runfolder'] = 'run%04i' % param['run_id']
         os.mkdir(param['runfolder'])
-        param['output_runpath'] = param['path']+'/data/'+param['runfolder']
+        param['output_runpath'] = param['path']+'data/'+param['runfolder']
         os.chdir(cwd)       # switch back to old directory        
         
         # Save grid information in txt file
-        # TODO store more parameters in the txt file
         output_txt_ini()
         str_tmp1 = (param['Lx']/1e3,param['Ly']/1e3)
         str_tmp2 = (param['Lx']/param['a_at_lat0'],param['Ly']/param['a'],param['lat_0'])
