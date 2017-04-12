@@ -18,8 +18,8 @@ def set_grad_mat():
     See the shallow water model documentation for further information.
     """
     
-    tic = tictoc.time()
     global GTx,GTy,Gux,Guy,Gvx,Gvy,Gqy,Gqx
+    global G2vx,G2uy  # as above but with higher order stencils on the boundary
     
     # for readability unpack the param dictionary
     dx,dy = param['dx'],param['dy']
@@ -77,6 +77,49 @@ def set_grad_mat():
     sparse.dia_matrix((-d2[::-1],-(nx+1)),shape=((Nq,sj))).tocsr()[:,-np.array(indx2)[::-1]-1])/dx
     Gqx = -Gqx.T.tocsr()
     
+    ## HIGHER ORDER GRADIENTS - 2nd ORDER also on the boundary
+    # stencil taken from Shchepetkin and O'Brien (1996), Mon. Wea. Review, equation (18)
+    lateral_stencil = [4, -1,1/5.]
+    
+    # G2vx the 2nd order (also on the boundaries) gradient from v- on q-points
+    block1 = np.array(lateral_stencil) # corresponding to the derivative at westernmost q-point
+    block2 = np.array([[-1,1],]*(nx-1)) # corresponding to the interior derivatives
+    block3 = -block1[::-1] # corresponding to the derivative at easternmost q-point
+    
+    datablock = np.hstack((block1,block2.flatten(),block3))
+    data = np.array([datablock,]*(ny-1)).flatten() # data array
+    
+    lb = len(block1)
+    row_ind_1st_row = np.hstack(([0,]*lb,np.arange(1,nx).repeat(2),[nx,]*lb)) + (nx+1)
+    row_ind = (np.array([row_ind_1st_row,]*(ny-1)).T + np.arange(ny-1)*(nx+1)).T.flatten()
+    
+    # column indices
+    col_ind_1st_row = np.hstack((range(lb),np.arange(nx).repeat(2)[1:-1],nx-np.arange(lb,0,-1)))
+    col_ind = (np.array([col_ind_1st_row,]*(ny-1)).T + np.arange(ny-1)*nx).T.flatten()
+    
+    G2vx = sparse.csr_matrix((data,(row_ind,col_ind)),shape=(Nq,Nv)) / dx
+    
+    # G2uy
+    block1 = np.array(lateral_stencil*(nx-1))    # derivative at southern boundary
+    block2 = np.array([-1,1]*(nx-1)*(ny-1))     # derivative at interior points
+    block3 = -block1[::-1]      # derivative at northern boundary
+    
+    data = np.hstack((block1,block2,block3))
+    
+    lb = int(len(block1)/(nx-1))
+    row_ind_1st_row = np.arange(1,nx).repeat(lb)
+    row_ind_last_row = Nq - row_ind_1st_row[::-1] - 1
+    row_ind_2nd_row = np.arange(1,nx).repeat(2)
+    row_ind_int = (np.array([row_ind_2nd_row,]*(ny-1)).T + np.arange(1,ny)*(nx+1)).T.flatten()
+    row_ind = np.hstack((row_ind_1st_row,row_ind_int,row_ind_last_row))
+
+    col_ind_1st_row = np.arange((nx-1)*lb).reshape(lb,nx-1).flatten('F')
+    col_ind_int = (np.array([np.arange((nx-1)*(ny-1)),]*2).T + np.array([0,nx-1])).flatten()
+    col_ind_last_row = Nu - col_ind_1st_row[::-1] - 1
+    col_ind = np.hstack((col_ind_1st_row,col_ind_int,col_ind_last_row))
+    
+    G2uy = sparse.csr_matrix((data,(row_ind,col_ind)),shape=(Nq,Nu)) / dy
+    
     # set data type
     Gux = Gux.astype(param['dat_type'])
     Guy = Guy.astype(param['dat_type'])
@@ -86,11 +129,15 @@ def set_grad_mat():
     GTy = GTy.astype(param['dat_type'])
     Gqx = Gqx.astype(param['dat_type'])
     Gqy = Gqy.astype(param['dat_type'])
-        
-    #feedback on time
-    output_txt('Gradients in %.4fs' % (tictoc.time() - tic))
+    G2uy = G2uy.astype(param['dat_type'])
+    G2vx = G2vx.astype(param['dat_type'])
     
-def set_lapl_mat():
+    if lbc != 2:    # higher order stencil is only for no-slip
+        G2uy = Guy
+        G2vx = Gvx
+    
+    
+def set_lapl_mat(): 
     """ Sets up the horizontal Laplacian (harmonic diffusion) and also the 
     biharmonic diffusion operator LL.
     
@@ -105,23 +152,20 @@ def set_lapl_mat():
     similar for LLv, LLT. The lateral boundary conditions are taken into account 
     as they are contained in the G-matrices."""
     
-    tic = tictoc.time()
     global Lu, Lv, Lq, LT
-    global LLu, LLv, LLT
+    global LLu, LLv, LLT, LLq
     
     # harmonic operators
-    Lu = GTx.dot(Gux) + Gqy.dot(Guy)   
-    Lv = Gqx.dot(Gvx) + GTy.dot(Gvy)
+    Lu = GTx.dot(Gux) + Gqy.dot(G2uy)   
+    Lv = Gqx.dot(G2vx) + GTy.dot(Gvy)
     LT = Gux.dot(GTx) + Gvy.dot(GTy)
-    Lq = Gvx.dot(Gqx) + Guy.dot(Gqy)
+    Lq = G2vx.dot(Gqx) + G2uy.dot(Gqy)
     
     # biharmonic operators
     LLu = Lu.dot(Lu)    
     LLv = Lv.dot(Lv)
     LLT = LT.dot(LT)
-    
-    #feedback on time
-    output_txt('Laplacians in %.4fs' % (tictoc.time() - tic))
+    LLq = Lq.dot(Lq)
     
 ## SET UP INTERPOLATION MATRICES ON ARAKAWA C-grid
 def set_interp_mat():
@@ -138,7 +182,6 @@ def set_interp_mat():
     
     """
     
-    tic = tictoc.time()
     global Ivu, Iuv, IqT, IuT, IvT, ITu, ITv, Iqu, Iqv, Iuq, Ivq, ITq
 
     # for readability unpack the param dictionary
@@ -235,8 +278,6 @@ def set_interp_mat():
     Iqu = Iqu.astype(param['dat_type'])
     Iqv = Iqv.astype(param['dat_type'])
 
-    output_txt('Interpolations in %.4fs' % (tictoc.time() - tic))
-
 ## RESHAPE FUNCTIONS
 """ reshape functions are used to get from vector representation to matrix 
 representation mostly for plotting or output purposes. Note on the grid numbering:
@@ -280,6 +321,13 @@ def set_arakawa_mat():
         in physical x,y space.
         
         """
+    
+    #TODO ALeur, ALeul, ALpvu, ALpvd can also be summarized in essentially two
+    #TODO stencils, AL3, AL4, might lead to some minor speed up (see documentation)
+    
+    #TODO think about whether the S-matrices can also be written as index
+    #TODO may involve the need of another ghost point though
+    
     global AL1, AL2 # general matrices for the only two different stencils
     global indx_au, indx_bu, indx_cu, indx_du   # indices to pick the right rows of AL1 or 2
     global indx_av, indx_bv, indx_cv, indx_dv
@@ -290,7 +338,6 @@ def set_arakawa_mat():
     global ALpvu, ALpvd #V-components lin comb of q
     global Spvu, Spvd, Sav, Sbv, Scv, Sdv   #V-components shift operators    
 
-    tic = tictoc.time()
     # for readability unpack the param dictionary
     nx,ny = param['nx'],param['ny']
     NT,Nu,Nv,Nq = param['NT'],param['Nu'],param['Nv'],param['Nq']
@@ -405,7 +452,3 @@ def set_arakawa_mat():
     Sbv = Sbv.astype(param['dat_type'])
     Scv = Scv.astype(param['dat_type'])
     Sdv = Sdv.astype(param['dat_type'])
-    
-    # feedback on time
-    output_txt('AL Interpolations in %.4fs' % (tictoc.time() - tic))
-    output_txt('')

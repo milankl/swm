@@ -24,14 +24,9 @@ def rhs(u,v,h):
     U = u*h_u    # volume fluxes: U on u-grid
     V = v*h_v    # and V on v-grid
     
-    dudx = Gux.dot(u)   # precompute spatial derivatives
-    dudy = Guy.dot(u)
-    dvdx = Gvx.dot(v)
-    dvdy = Gvy.dot(v)
-    
     KE = IuT.dot(u**2) + IvT.dot(v**2)  # kinetic energy without .5-factor
     
-    q = (f_q + dvdx - dudy) / h_q       # potential vorticity q
+    q = (f_q + Gvx.dot(v) - Guy.dot(u)) / h_q       # potential vorticity q
     p = .5*KE + param['g']*h            # Bernoulli potential p
     
     ## BOTTOM FRICTION: quadratic drag
@@ -53,22 +48,22 @@ def rhs(u,v,h):
     #bidiff_v = param['nu_B']*LLv.dot(v)                      
     
     # symmetric stress tensor S = (S11, S12, S12, -S11), store only S11, S12
-    S = (dudx-dvdy,dvdx + dudy)
+    S = (Gux.dot(u)-Gvy.dot(v),G2vx.dot(v) + G2uy.dot(u))
     hS = (h*S[0],h_q*S[1])
 
     diff_u = (GTx.dot(hS[0]) + Gqy.dot(hS[1])) / h_u
     diff_v = (Gqx.dot(hS[1]) - GTy.dot(hS[0])) / h_v
 
     # biharmonic stress tensor R = (R11, R12, R12, -R11), store only R11, R12
-    R = (Gux.dot(diff_u) - Gvy.dot(diff_v), Gvx.dot(diff_v) + Guy.dot(diff_u))
+    R = (Gux.dot(diff_u) - Gvy.dot(diff_v), G2vx.dot(diff_v) + G2uy.dot(diff_u))
     hR = (h*R[0],h_q*R[1])
     
-    bidiff_u = -param['nu_B']*(GTx.dot(hR[0]) + Gqy.dot(hR[1])) / h_u
-    bidiff_v = -param['nu_B']*(Gqx.dot(hR[1]) - GTy.dot(hR[0])) / h_v
+    bidiff_u = param['nu_B']*(GTx.dot(hR[0]) + Gqy.dot(hR[1])) / h_u
+    bidiff_v = param['nu_B']*(Gqx.dot(hR[1]) - GTy.dot(hR[0])) / h_v
     
     ## RIGHT-HAND SIDE: ADD TERMS
-    rhs_u = adv_u - GTx.dot(p) + Fx + bidiff_u - bfric_u
-    rhs_v = adv_v - GTy.dot(p) + bidiff_v - bfric_v
+    rhs_u = adv_u - GTx.dot(p) + Fx - bidiff_u - bfric_u
+    rhs_v = adv_v - GTy.dot(p) - bidiff_v - bfric_v
     rhs_h = -Gux.dot(U) - Gvy.dot(V)
     
     return rhs_u, rhs_v, rhs_h
