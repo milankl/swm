@@ -22,9 +22,9 @@ def set_param():
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
     # initial conditions
-    param['initial_conditions'] = 'ncfile'     # 'rest' or 'ncfile'
-    param['init_run_id'] = 0                 # only for starting from ncfile
-    param['init_interpolation'] = 1          # allow initial interpolation in case grids do not match
+    param['initial_conditions'] = 'rest'   # 'rest' or 'ncfile'
+    param['init_run_id'] = 1                 # only for starting from ncfile
+    param['init_interpolation'] = 0          # for 'ncfile': allow initial interpolation in case grids do not match
     
     # boundary conditions
     param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
@@ -33,7 +33,7 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 1             # or 0 for no data storage
+    param['output'] = 0             # or 0 for no data storage
     param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters

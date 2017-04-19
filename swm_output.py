@@ -49,8 +49,8 @@ def output_nc_ini():
     for ncfile,var in zip([ncu,ncv,nch],['u','v','h']):
         # store time as integers as measured in seconds and gets large
         ncfile['t'] = ncfile['file'].createVariable('t','i8',('t',),zlib=True,fletcher32=True)
-        ncfile['x'] = ncfile['file'].createVariable('x',p,('x',),zlib=True,fletcher32=True)
-        ncfile['y'] = ncfile['file'].createVariable('y',p,('y',),zlib=True,fletcher32=True)
+        ncfile['x'] = ncfile['file'].createVariable('x','i8',('x',),zlib=True,fletcher32=True)
+        ncfile['y'] = ncfile['file'].createVariable('y','i8',('y',),zlib=True,fletcher32=True)
         ncfile[var] = ncfile['file'].createVariable(var,p,('t','y','x'),zlib=True,fletcher32=True)
     
     # write units
@@ -124,7 +124,9 @@ def duration_est(tic):
         time_togo = (tictoc.time()-tic) / (i+1) * param['Nt']
         str1 = 'Model integration will take approximately '+readable_secs(time_togo)+', '
         str2 = 'and is hopefully done on '+tictoc.asctime(tictoc.localtime(tic + time_togo))
-        output_txt(str1+str2)        
+        output_txt(str1+str2)
+        print(str1)
+        print(str2)
     
 def output_txt_ini():
     """ Initialise the output txt file for information about the run."""

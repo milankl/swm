@@ -19,14 +19,16 @@ Hopefully, there will be soon a documentation available.
 """
 
 from __future__ import print_function       # tested with python 3.6 and 2.7.12
-path = '/home/kloewer/github/swm/'          # change here
+
+# path
+import os
+path = os.getcwd() + '/'
 
 # import modules
-import os; os.chdir(path)
-import numpy as np                          # version 1.11.3
-from scipy import sparse                    # version 0.18.1
+import numpy as np                          # version 1.11.3-py36
+from scipy import sparse                    # version 0.19-py36
 import time as tictoc
-from netCDF4 import Dataset                 # version 1.2.4, hdf5 version 1.8.17, hdf4 version 4.2.12
+from netCDF4 import Dataset                 # version 1.2.4-py36, hdf5 version 1.8.17-py36, hdf4 version 4.2.12-py36
 import glob
 import zipfile
 
