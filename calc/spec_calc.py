@@ -1,23 +1,18 @@
 ## COMPUTE EKE SPECTRUM
 from __future__ import print_function
-path = '/home/mkloewer/github/swm/'
-import os; os.chdir(path) # change working directory
+
+# path
+import os
+path = os.path.dirname(os.getcwd()) + '/'   # on level above
+os.chdir(path)                              # change working directory
+
 import numpy as np
 from scipy import sparse
-import time as tictoc
-from netCDF4 import Dataset
-import glob
-import matplotlib.pyplot as plt
-
-exec(open(path+'swm_param.py').read())
-exec(open(path+'swm_operators.py').read())
-exec(open(path+'swm_rhs.py').read())
-exec(open(path+'swm_integration.py').read())
-exec(open(path+'swm_output.py').read())
 
 # OPTIONS
-runfolder = [2]
-print('Calculating EKE spectrum from run ' + str(runfolder))
+# several entries in the list concatenates the runs and stores the result in the last folder
+runfolder = [2]     
+print('Calculating eke spectrum from run ' + str(runfolder))
 
 ##
 def eke_spec_avg(u,v,dx,dy):
@@ -29,7 +24,7 @@ def eke_spec_avg(u,v,dx,dy):
     ky = (1/(dy))*np.hstack((np.arange(0,(ny+1)/2.),np.arange(-ny/2.+1,0)))/float(ny)
 
     kxx,kyy = np.meshgrid(kx,ky)
-    # radial distance from kx,ky = 0[-700:]
+    # radial distance from kx,ky = 0
     kk = np.sqrt(kxx**2 + kyy**2) 
 
     if nx >= ny: #kill negative wavenumbers
@@ -43,7 +38,6 @@ def eke_spec_avg(u,v,dx,dy):
     p_eke = np.empty((nt,ny,nx))
     nxy2 = nx**2*ny**2
 
-    
     for i in range(nt):
         pu = abs(np.fft.fft2(u[i,:,:]))**2/nxy2
         pv = abs(np.fft.fft2(v[i,:,:]))**2/nxy2
@@ -54,10 +48,8 @@ def eke_spec_avg(u,v,dx,dy):
     p_eke_avg = .5*p_eke.mean(axis=0)
 
     # create radial coordinates, associated with k[i]
-    # WRONG nearest point interpolation to get points within the -.5,.5 annulus
     rcoords = []
     for i in range(len(k)):
-        #rcoords.append(np.where((kk>(k[i]-.5*dk))*(kk<=(k[i]+.5*dk))))
         rcoords.append(np.where(kk<k[i]))
 
     # mulitply by dk to have the corresponding integral
@@ -68,29 +60,30 @@ def eke_spec_avg(u,v,dx,dy):
     eke_spec = np.diff(eke_spec) / dk
     k = (k[:-1] + k[1:])/2.
 
-    return k,eke_spec  # eliminate zero wavenumber
+    return k,eke_spec
 
 ## read data
 for r,i in zip(runfolder,range(len(runfolder))):
     runpath = path+'data/run%04i' % r
     
     if i == 0:
-        u = np.load(runpath+'/u_sub.npy')[365:,:,:]
-        v = np.load(runpath+'/v_sub.npy')[365:,:,:]
-        #h = np.load(runpath+'/h_sub.npy')        
-        time = np.load(runpath+'/t_sub.npy')[365:]
+        u = np.load(runpath+'/u_sub.npy')
+        v = np.load(runpath+'/v_sub.npy')
+        t = np.load(runpath+'/t_sub.npy')
         print('run %i read.' % r)
 
     else:
         u = np.concatenate((u,np.load(runpath+'/u_sub.npy')))
         v = np.concatenate((v,np.load(runpath+'/v_sub.npy')))
-        #h = np.concatenate((h,np.load(runpath+'/h_sub.npy')))
-        time = np.hstack((time,np.load(runpath+'/t_sub.npy')))
+        t = np.hstack((t,np.load(runpath+'/t_sub.npy')))
         print('run %i read.' % r)
 
-t = time / 3600. / 24.  # in days
-tlen = len(time)
-dt = time[1] - time[0]
+## read param
+global param
+param = np.load(runpath+'/param.npy').all()
+
+tlen = len(t)
+dt = t[1] - t[0]
 
 ## create ouputfolder
 try:
@@ -98,17 +91,20 @@ try:
 except:
    pass
 
-## read param
-global param
-param = np.load(runpath+'/param.npy').all()
-param['output'] = 0
+## include boundary conditions
+u = np.pad(u,((0,0),(0,0),(1,1)),'constant')    # kinematic
+v = np.pad(v,((0,0),(1,1),(0,0)),'constant')
 
-set_grad_mat()
-set_interp_mat()
+u = np.pad(u,((0,0),(0,1),(0,0)),'edge')    # first: free-slip
+v = np.pad(v,((0,0),(0,0),(0,1)),'edge')
 
-## part 1 cut off boundary by 3 grid cells
-k,p = eke_spec_avg(u[:,2:-3,2:-2],v[:,2:-2,2:-3],param['dx'],param['dy'])
+u[:,-1,:] = (1-param['lbc'])*u[:,-1,:]  # now: adapt the actual boundary condition
+v[:,:,-1] = (1-param['lbc'])*v[:,:,-1]
 
+## actual calculation
+k,p = eke_spec_avg(u,v,param['dx'],param['dy'])
+
+## storing
 dic = dict()
 all_var2export = ['k','p']
 
@@ -116,25 +112,5 @@ for vars in all_var2export:
    exec('dic[vars] ='+vars)
     
 np.save(runpath+'/analysis/spec_eke.npy',dic)
-
-## include kinematic boundary condition on one side, pad with zero
-u = np.pad(u,((0,0),(0,0),(1,1)),'constant')
-v = np.pad(v,((0,0),(1,1),(0,0)),'constant')
-
-u = np.pad(u,((0,0),(0,1),(0,0)),'edge')
-v = np.pad(v,((0,0),(0,0),(0,1)),'edge')
-
-u[:,-1,:] = -u[:,-1,:]
-v[:,:,-1] = -v[:,:,-1]
-
-k,p = eke_spec_avg(u,v,param['dx'],param['dy'])
-
-dic = dict()
-all_var2export = ['k','p']
-
-for vars in all_var2export:
-   exec('dic[vars] ='+vars)
-    
-np.save(runpath+'/analysis/spec_eke_b.npy',dic)
 print('Everything stored.')
 

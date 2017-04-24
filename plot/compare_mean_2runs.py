@@ -1,19 +1,19 @@
 ## PRODUCE MEAN PLOTS COMPARE FROM TWO RUNS
 from __future__ import print_function
-path = '/home/mkloewer/python/swm/'
-import os; os.chdir(path) # change working directory
+
+# path
+import os
+path = os.path.dirname(os.getcwd()) + '/'   # on level above
+os.chdir(path)                              # change working directory
+
 import numpy as np
 from scipy import sparse
 import matplotlib.pyplot as plt
-import time as tictoc
-from netCDF4 import Dataset
-import glob
-from matplotlib.colors import BoundaryNorm,LogNorm
 import cmocean
 
 # OPTIONS
-runfolder = [3,10]
-print('Compare mean plots from run ' + str(runfolder))
+runfolder = [1,2]
+print('Produce mean plots from run ' + str(runfolder))
 
 ## read data
 
@@ -24,11 +24,6 @@ param1 = np.load(runpath1+'/param.npy').all()
 runpath2 = path+'data/run%04i' % runfolder[1]
 D2 = np.load(runpath2+'/analysis/mean.npy').all()
 param2 = np.load(runpath2+'/param.npy').all()
-
-runpath3 = '/home/mkloewer/github/swm/data/run%04i' % 0
-#runpath3 = path+'data/run%04i' % 13
-D3 = np.load(runpath3+'/analysis/mean.npy').all()
-param3 = np.load(runpath3+'/param.npy').all()
 
 # functions
 def h2mat(h,param):
@@ -43,6 +38,10 @@ def v2mat(v,param):
 def q2mat(q,param):
     return q.reshape((param['ny']+1,param['nx']+1))
 
+## turning h into eta
+
+D1['hm'] = D1['hm'] - param1['H']
+D2['hm'] = D2['hm'] - param2['H']
 
 ## PLOTTING   
 hm_max = np.max(abs(D2['hm']))
@@ -54,7 +53,7 @@ ulevs = np.linspace(-um_max,um_max,64)
 vm_max = np.max(abs(D2['vm']))
 vlevs = np.linspace(-vm_max,vm_max,64)
 
-fig,axs = plt.subplots(3,3,figsize=(9,9),sharex=True,sharey=True)
+fig,axs = plt.subplots(2,3,figsize=(9,6),sharex=True,sharey=True)
 plt.tight_layout(rect=[0,.05,1,0.98])
 fig.subplots_adjust(wspace=0.03,hspace=0.03)
 n = axs.shape[1]
@@ -70,15 +69,11 @@ a12 = axs[0,1].contourf(param1['x_u']/1e3,param1['y_u']/1e3,u2mat(D1['um'],param
 fig.colorbar(a12,cax=caxs[1],orientation='horizontal',ticks=[-.5,-.25,0,.25,.5])
 
 a13 = axs[0,2].contourf(param1['x_v']/1e3,param1['y_v']/1e3,v2mat(D1['vm'],param1),vlevs,cmap=cmocean.cm.balance)
-fig.colorbar(a13,cax=caxs[2],orientation='horizontal',ticks=[-1,-.5,0,.5,1])
+fig.colorbar(a13,cax=caxs[2],orientation='horizontal',ticks=[-1,-.5,0,.5,1])   
 
-axs[1,0].contourf(param3['x_T']/1e3,param3['y_T']/1e3,h2mat(D3['hm']-param3['H'],param3),hlevs,cmap=cmocean.cm.balance,extend='both')        
-axs[1,1].contourf(param3['x_u']/1e3,param3['y_u']/1e3,u2mat(D3['um'],param3),ulevs,cmap=cmocean.cm.balance,extend='both')    
-axs[1,2].contourf(param3['x_v']/1e3,param3['y_v']/1e3,v2mat(D3['vm'],param3),vlevs,cmap=cmocean.cm.balance,extend='both')    
-
-axs[2,0].contourf(param2['x_T']/1e3,param2['y_T']/1e3,h2mat(D2['hm'],param2),hlevs,cmap=cmocean.cm.balance)        
-axs[2,1].contourf(param2['x_u']/1e3,param2['y_u']/1e3,u2mat(D2['um'],param2),ulevs,cmap=cmocean.cm.balance)    
-axs[2,2].contourf(param2['x_v']/1e3,param2['y_v']/1e3,v2mat(D2['vm'],param2),vlevs,cmap=cmocean.cm.balance)    
+axs[1,0].contourf(param2['x_T']/1e3,param2['y_T']/1e3,h2mat(D2['hm'],param2),hlevs,cmap=cmocean.cm.balance)        
+axs[1,1].contourf(param2['x_u']/1e3,param2['y_u']/1e3,u2mat(D2['um'],param2),ulevs,cmap=cmocean.cm.balance)    
+axs[1,2].contourf(param2['x_v']/1e3,param2['y_v']/1e3,v2mat(D2['vm'],param2),vlevs,cmap=cmocean.cm.balance)    
 
 axs[0,0].set_title(r'$\eta$ [m]')
 axs[0,1].set_title(r'$u$ [ms$^{-1}$]')
@@ -91,10 +86,8 @@ axs[0,0].set_xlim(0,param1['Lx']/1e3)
 axs[0,0].set_ylim(0,param1['Ly']/1e3)
 
 axs[0,0].set_ylabel(r'Low resolution, $\Delta x = 30$km')
-axs[1,0].set_ylabel(r'Low resolution + backscatter')
-axs[2,0].set_ylabel(r'High resolution, $\Delta x = 7.5$km')
+axs[1,0].set_ylabel(r'High resolution, $\Delta x = 7.5$km')
 
 
-plt.savefig(path+'compare/uvh_mean_3runs.png')
+plt.savefig(path+'figs/uvh_mean_2runs.png')
 plt.close(fig)
-#plt.show()

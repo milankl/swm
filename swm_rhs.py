@@ -1,10 +1,10 @@
 ## RIGHT HAND SIDE OF THE EQUATIONS
-def rhs(u,v,h):
+def rhs(u,v,eta):
     """ Set of equations:
     
     u_t = qhv - p_x + Fx + Mx(u,v) - bottom_friction
     v_t = -qhu - p_y + My(u,v)  - bottom_friction
-    h_t = -(uh)_x - (vh)_y
+    eta_t = -(uh)_x - (vh)_y
     
     with p = .5*(u**2 + v**2) + gh, the bernoulli potential
     and q = (v_x - u_y + f)/h the potential vorticity
@@ -16,6 +16,8 @@ def rhs(u,v,h):
     #TODO param[nu_B] is large, applying the biharmonic creates tiny values (as dx^4 is large)
     #TODO think about a way to avoid possibly involved rounding errors especially with single precision
     #TODO might be efficiently only possible for dx=dy
+    
+    h = eta + param['H']    
     
     h_u = ITu*h    # h on u-grid
     h_v = ITv*h    # h on v-grid    
@@ -31,8 +33,8 @@ def rhs(u,v,h):
     
     ## BOTTOM FRICTION: quadratic drag
     sqrtKE = np.sqrt(KE)
-    bfric_u = param['c_D']/param['H']*(ITu*sqrtKE)*u
-    bfric_v = param['c_D']/param['H']*(ITv*sqrtKE)*v
+    bfric_u = param['c_D']*(ITu*sqrtKE)*u/h_u
+    bfric_v = param['c_D']*(ITv*sqrtKE)*v/h_v
     
     ## ADVECTION
     # Sadourny, 1975 enstrophy conserving scheme.
@@ -62,11 +64,11 @@ def rhs(u,v,h):
     bidiff_v = param['nu_B']*(Gqx*hR[1] - GTy*hR[0]) / h_v
     
     ## RIGHT-HAND SIDE: ADD TERMS
-    rhs_u = adv_u - GTx*p + Fx - bidiff_u - bfric_u
+    rhs_u = adv_u - GTx*p + Fx/h_u - bidiff_u - bfric_u
     rhs_v = adv_v - GTy*p - bidiff_v - bfric_v
-    rhs_h = -(Gux*U + Gvy*V)
+    rhs_eta = -(Gux*U + Gvy*V)
     
-    return rhs_u, rhs_v, rhs_h
+    return rhs_u, rhs_v, rhs_eta
 
 def ALadvection(q,U,V):
     """ Arakawa and Lamb,1981 advection terms. See interpolation.py for further information. """

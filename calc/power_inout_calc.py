@@ -1,31 +1,30 @@
 ## POWER INPUT EXIT COMPUTION AND PLOTTING
 from __future__ import print_function
-path = '/home/mkloewer/python/swm/'
-import os; os.chdir(path) # change working directory
+
+# path
+import os
+path = os.path.dirname(os.getcwd()) + '/'   # on level above
+os.chdir(path)                              # change working directory
+
 import numpy as np
 from scipy import sparse
-import time as tictoc
-from netCDF4 import Dataset
-import glob
-
-from scipy.integrate import cumtrapz
 
 # OPTIONS
-runfolder = [2,3]
-print('Calculating power input exit from run ' + str(runfolder))
-
+# several entries in the list concatenates the runs and stores the result in the last folder
+runfolder = [0]     
+print('Calculating power in/out from run ' + str(runfolder))
 
 InPower_T = []
 ExPower_T = []
 
 ## read data
-for r in runfolder:
+for r in runfolder: # calculate each run separately
     runpath = path+'data/run%04i' % r
     
     u = np.load(runpath+'/u_sub.npy')
     v = np.load(runpath+'/v_sub.npy')
-    h = np.load(runpath+'/h_sub.npy')
-    time = np.load(runpath+'/t_sub.npy')
+    eta = np.load(runpath+'/eta_sub.npy')
+    t = np.load(runpath+'/t_sub.npy')
     print('run %i read.' % r)
 
     ## read param
@@ -35,21 +34,13 @@ for r in runfolder:
     # import functions
     exec(open(path+'swm_param.py').read())
     exec(open(path+'swm_operators.py').read())
-    exec(open(path+'swm_output.py').read())
-    param['output'] = 0
-    
-    try:
-        param['nu_B'] = param['B']
-    except:
-        pass
     
     set_grad_mat()
     set_interp_mat()
-    set_lapl_mat()
     set_coriolis()
     set_forcing()
     
-    tlen = len(time)
+    tlen = len(t)
     ## create ouputfolder
     try:
         os.mkdir(runpath+'/analysis')
@@ -59,7 +50,7 @@ for r in runfolder:
     ## reshape u,v
     u = u.reshape((tlen,param['Nu'])).T
     v = v.reshape((tlen,param['Nv'])).T
-    h = h.reshape((tlen,param['NT'])).T + param['H']
+    h = eta.reshape((tlen,param['NT'])).T + param['H']
     print('Reshape done.')
     
     h_q = ITq.dot(h)
@@ -68,7 +59,7 @@ for r in runfolder:
     print('h_u, h_v, h_q done.')
     
     ## input
-    InPower = ((u.T*Fx).T*param['rho']*param['H']).mean(axis=1)
+    InPower = ((u.T*Fx/h_u.T).T*param['rho']*param['H']).mean(axis=1)
     print('Input Power done.')
     
     # Shchepetkin and O'Brien divergence of a tensor formulation
@@ -99,7 +90,7 @@ for r in runfolder:
     InPower_T.append(IuT.dot(InPower))
     ExPower_T.append(IuT.dot(ExPower_u) + IvT.dot(ExPower_v))
 
-# Averaging
+# Averaging over runs
 InPower_T = np.array(InPower_T).mean(axis=0)
 ExPower_T = np.array(ExPower_T).mean(axis=0)
 

@@ -12,16 +12,16 @@ def output_nc_ini():
     # store files, dimensions and variables in dictionnaries
     ncu = dict()
     ncv = dict()
-    nch = dict()
+    nceta = dict()
 
     # creating the netcdf files
     ncformat = 'NETCDF4'
     ncu['file'] = Dataset(param['output_runpath']+'/u.nc','w',format=ncformat)
     ncv['file'] = Dataset(param['output_runpath']+'/v.nc','w',format=ncformat)
-    nch['file'] = Dataset(param['output_runpath']+'/h.nc','w',format=ncformat)
+    nceta['file'] = Dataset(param['output_runpath']+'/eta.nc','w',format=ncformat)
     
     # write general attributes
-    for ncfile in [ncu,ncv,nch]:
+    for ncfile in [ncu,ncv,nceta]:
         ncfile['file'].history = 'Created ' + tictoc.ctime(tictoc.time())
         ncfile['file'].description = 'Data from: Shallow-water model in double gyre configuration.'
         ncfile['file'].details = 'Cartesian coordinates, beta-plane approximation, Arakawa C-grid'
@@ -40,21 +40,21 @@ def output_nc_ini():
     ncv['ydim'] = ncv['file'].createDimension('y',param['ny']-1)
     ncv['tdim'] = ncv['file'].createDimension('t',param['output_tlen'])
     
-    nch['xdim'] = nch['file'].createDimension('x',param['nx'])
-    nch['ydim'] = nch['file'].createDimension('y',param['ny'])
-    nch['tdim'] = nch['file'].createDimension('t',param['output_tlen'])
+    nceta['xdim'] = nceta['file'].createDimension('x',param['nx'])
+    nceta['ydim'] = nceta['file'].createDimension('y',param['ny'])
+    nceta['tdim'] = nceta['file'].createDimension('t',param['output_tlen'])
     
     # create variables
     p = 'f4' # 32-bit precision storing, or f8 for 64bit
-    for ncfile,var in zip([ncu,ncv,nch],['u','v','h']):
+    for ncfile,var in zip([ncu,ncv,nceta],['u','v','eta']):
         # store time as integers as measured in seconds and gets large
         ncfile['t'] = ncfile['file'].createVariable('t','i8',('t',),zlib=True,fletcher32=True)
-        ncfile['x'] = ncfile['file'].createVariable('x','i8',('x',),zlib=True,fletcher32=True)
-        ncfile['y'] = ncfile['file'].createVariable('y','i8',('y',),zlib=True,fletcher32=True)
+        ncfile['x'] = ncfile['file'].createVariable('x','f8',('x',),zlib=True,fletcher32=True)
+        ncfile['y'] = ncfile['file'].createVariable('y','f8',('y',),zlib=True,fletcher32=True)
         ncfile[var] = ncfile['file'].createVariable(var,p,('t','y','x'),zlib=True,fletcher32=True)
     
     # write units
-    for ncfile in [ncu,ncv,nch]:
+    for ncfile in [ncu,ncv,nceta]:
         ncfile['t'].units = 's'
         ncfile['t'].long_name = 'time'
         ncfile['x'].units = 'm'
@@ -64,31 +64,32 @@ def output_nc_ini():
     
     ncu['u'].units = 'm/s'
     ncv['v'].units = 'm/s'
-    nch['h'].units = 'm'
+    nceta['eta'].units = 'm'
 
     # write dimensions
-    for ncfile,var in zip([ncu,ncv,nch],['u','v','T']):
+    for ncfile,var in zip([ncu,ncv,nceta],['u','v','T']):
         ncfile['x'][:] = param['x_'+var]
         ncfile['y'][:] = param['y_'+var]
         
     # make globally available
     global ncfiles
-    ncfiles = [ncu,ncv,nch]
+    ncfiles = [ncu,ncv,nceta]
     
     output_txt('Output will be stored in '+param['runfolder']+' every %i hours.' % (param['output_dt']/3600.))
     
     
-def output_nc(u,v,h,t):
-    """ Writes u,v,h fields on every nth time step """
+def output_nc(u,v,eta,t):
+    """ Writes u,v,eta fields on every nth time step """
     # output index j
     j = param['output_j']   # for convenience
 
     for ncfile in ncfiles:
         ncfile['t'][j] = t
     
+    #TODO issue, use unlimited time dimension or not?
     ncfiles[0]['u'][j,:,:] = u2mat(u)
     ncfiles[1]['v'][j,:,:] = v2mat(v)
-    ncfiles[2]['h'][j,:,:] = h2mat(h)
+    ncfiles[2]['eta'][j,:,:] = h2mat(eta)
     
     param['output_j'] += 1
     

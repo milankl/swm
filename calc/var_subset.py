@@ -1,24 +1,22 @@
 ## READ VARIABLE FROM SEVERAL NCFILES and store subset of it as NPY
 from __future__ import print_function
-path = '/home/mkloewer/github/swm/'
-import os; os.chdir(path) # change working directory
+
+# path
+import os
+path = os.path.dirname(os.getcwd()) + '/'   # on level above
+os.chdir(path)                              # change working directory
+
 import numpy as np
-from scipy import sparse
-import time as tictoc
 from netCDF4 import Dataset
-import glob
 
 # OPTIONS
-runfolder = [0,1,2]
+runfolder = [1,2]
 
 for r in runfolder:    
     print(('Subsampling from run %i') % r)
     
-    ## read data
     runpath = path+'data/run%04i' % r
-    
-    ##
-    sub = 4
+    sub = 4     # read only every sub-th time step 
     
     ncu = Dataset(runpath+'/u.nc')
     u = ncu['u'][:][::sub,:,:]
@@ -34,13 +32,11 @@ for r in runfolder:
     np.save(runpath+'/v_sub.npy',v)
     del v
     
-    nch = Dataset(runpath+'/h.nc')
-    h = nch['h'][:][::sub,:,:]
-    time = nch['t'][::sub]   # in seconds
-    t = time / 3600. / 24.  # in days
-    nch.close()
-    print('h read.')
-    np.save(runpath+'/h_sub.npy',h)
-    np.save(runpath+'/t_sub.npy',time)
-    del h
-    del time,t
+    nceta = Dataset(runpath+'/eta.nc')
+    eta = nceta['eta'][:][::sub,:,:]
+    t = nceta['t'][::sub]   # in seconds
+    nceta.close()
+    print('eta read.')
+    np.save(runpath+'/eta_sub.npy',h)
+    np.save(runpath+'/t_sub.npy',t)
+    del h,t

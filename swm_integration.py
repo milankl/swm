@@ -1,11 +1,11 @@
 ## TIME INTEGRATION
-def time_integration(u,v,h):
+def time_integration(u,v,eta):
     
     tic = tictoc.time()     # measure time
     global dt
     dt = param['dt']        # for convenience
     t = param['t0']         # initial time
-    feedback_ini(u,v,h,t)   # output
+    feedback_ini(u,v,eta,t)   # output
 
     ## RUNGE KUTTA 3rd ORDER or 4th ORDER
     if param['scheme'][:2] == 'RK':
@@ -17,13 +17,13 @@ def time_integration(u,v,h):
         # same loop for RK4 and for RK3 due to renaming above
         global i
         for i in range(param['Nt']):
-            duvh = RKn(u,v,h)
-            u = u + dt*duvh[0]
-            v = v + dt*duvh[1]
-            h = h + dt*duvh[2]
+            duveta = RKn(u,v,eta)
+            u = u + dt*duveta[0]
+            v = v + dt*duveta[1]
+            eta = eta + dt*duveta[2]
             t += dt
             
-            feedback(u,v,h,t,tic)
+            feedback(u,v,eta,t,tic)
 
     ## ADAMS-BASHFORTH
     else:
@@ -34,23 +34,23 @@ def time_integration(u,v,h):
         # preallocate the multistep matrices (right-hand sides for the last NABth time steps)
         urhs = np.empty((param['Nu'],NAB)).astype(param['dat_type'])
         vrhs = np.empty((param['Nv'],NAB)).astype(param['dat_type'])
-        hrhs = np.empty((param['NT'],NAB)).astype(param['dat_type'])
+        etarhs = np.empty((param['NT'],NAB)).astype(param['dat_type'])
         
         for i in range(param['Nt']):
             # increases the AB order until the desired order is reached
             abcolumn = min(i,NAB-1) 
 
-            urhs[:,0],vrhs[:,0],hrhs[:,0] = rhs(u,v,h)  # evaluation of the rhs
+            urhs[:,0],vrhs[:,0],etarhs[:,0] = rhs(u,v,eta)  # evaluation of the rhs
             u = u + dt*urhs.dot(ABb[:,abcolumn])        # update u,v,h
             v = v + dt*vrhs.dot(ABb[:,abcolumn])
-            h = h + dt*hrhs.dot(ABb[:,abcolumn])
+            eta = eta + dt*etarhs.dot(ABb[:,abcolumn])
             t += dt
 
             urhs = urhs[:,swap]     # swap multistep matrices
             vrhs = vrhs[:,swap]     # e.g. 0->1, 1->2, 2->3, 3->0
-            hrhs = hrhs[:,swap]
+            etarhs = etarhs[:,swap]
             
-            feedback(u,v,h,t,tic)
+            feedback(u,v,eta,t,tic)
     
     print(('Integration done in '+readable_secs(tictoc.time() - tic)+' on '+tictoc.asctime()))
     output_txt(('\nTime integration done in '+readable_secs(tictoc.time() - tic)+' on '+tictoc.asctime()))
@@ -60,35 +60,35 @@ def time_integration(u,v,h):
         output_nc_fin()         # finalise nc file
         output_txt_fin()        # finalise info txt file
         
-    return u,v,h
+    return u,v,eta
 
 ### TIME STEPPING SCHEMES
-def RK4(u,v,h):
+def RK4(u,v,eta):
     """ Computes the right-hand side using RUNGE KUTTA 4th order scheme. 
     u,v,h are coupled in every of the 4 sub-time steps of the RK4 scheme."""
-    k1 = rhs(u,v,h)
-    k2 = rhs(u + dt/2.*k1[0],v + dt/2.*k1[1],h + dt/2.*k1[2])
-    k3 = rhs(u + dt/2.*k2[0],v + dt/2.*k2[1],h + dt/2.*k2[2])
-    k4 = rhs(u + dt*k3[0],v + dt*k3[1],h + dt*k3[2])
+    k1 = rhs(u,v,eta)
+    k2 = rhs(u + dt/2.*k1[0],v + dt/2.*k1[1],eta + dt/2.*k1[2])
+    k3 = rhs(u + dt/2.*k2[0],v + dt/2.*k2[1],eta + dt/2.*k2[2])
+    k4 = rhs(u + dt*k3[0],v + dt*k3[1],eta + dt*k3[2])
     
     du = (k1[0] + 2*k2[0] + 2*k3[0] + k4[0]) / 6.
     dv = (k1[1] + 2*k2[1] + 2*k3[1] + k4[1]) / 6.
-    dh = (k1[2] + 2*k2[2] + 2*k3[2] + k4[2]) / 6.
+    deta = (k1[2] + 2*k2[2] + 2*k3[2] + k4[2]) / 6.
     
-    return du,dv,dh
+    return du,dv,deta
     
-def RK3(u,v,h):
+def RK3(u,v,eta):
     """ Computes the right-hand side using RUNGE KUTTA 3rd order scheme. 
     u,v,h are coupled in every of the 3 sub-time steps of the RK3 scheme."""
-    k1 = rhs(u,v,h)
+    k1 = rhs(u,v,eta)
     k2 = rhs(u + dt/2.*k1[0],v + dt/2.*k1[1],h + dt/2.*k1[2])
     k3 = rhs(u + dt*(-k1[0]+2*k2[0]),v + dt*(-k1[1]+2*k2[1]),h + dt*(-k1[2]+2*k2[2]))
     
     du = (k1[0] + 4*k2[0] + k3[0]) / 6.
     dv = (k1[1] + 4*k2[1] + k3[1]) / 6.
-    dh = (k1[2] + 4*k2[2] + k3[2]) / 6.
+    deta = (k1[2] + 4*k2[2] + k3[2]) / 6.
     
-    return du,dv,dh
+    return du,dv,deta
     
 def ABcoefficients(N):
     """ Returns the Adams-Bashforth coefficients up to order N <= 5. """
@@ -101,10 +101,10 @@ def ABcoefficients(N):
     return ABb[:N,:N].astype(param['dat_type'])
 
 ## FEEDBACK ON INTEGRATION
-def feedback_ini(u,v,h,t):
+def feedback_ini(u,v,eta,t):
     if param['output']:
         output_nc_ini()
-        output_nc(u,v,h,t)  # store initial conditions
+        output_nc(u,v,eta,t)  # store initial conditions
         output_param()      # store the param dictionnary
         
         # Store information in txt file
@@ -116,10 +116,10 @@ def feedback_ini(u,v,h,t):
     else:
         print('Starting shallow water model on '+tictoc.asctime())
 
-def feedback(u,v,h,t,tic):
+def feedback(u,v,eta,t,tic):
     if (i+1) % param['output_n'] == 0:
         if param['output']:     # storing u,v,h as netCDF4
-            output_nc(u,v,h,t)
+            output_nc(u,v,eta,t)
     
     # feedback on progress every 5% step.
     if ((i+1)/param['Nt']*100 % 5) < (i/param['Nt']*100 % 5):

@@ -1,6 +1,6 @@
 ## SHALLOW WATER MODEL
 """
-Copyright (C) 2017,  Milan Kloewer (mkloewer@geomar.de)
+Copyright (C) 2017,  Milan Kloewer (milankloewer@gmx.de)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,7 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Hopefully, there will be soon a documentation available.
+A documentation, in a preliminary version though, is available via
+http://www.github.com/milankl/swm/docu/swm_documentation.pdf
+
 """
 
 from __future__ import print_function       # tested with python 3.6 and 2.7.12
@@ -40,5 +42,5 @@ exec(open(path+'swm_integration.py').read())
 exec(open(path+'swm_output.py').read())
 
 ## set all parameters and initial conditions, and run model
-u,v,h = set_param()
-u,v,h = time_integration(u,v,h)
+u,v,eta = set_param()
+u,v,eta = time_integration(u,v,eta)

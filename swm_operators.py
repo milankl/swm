@@ -289,8 +289,8 @@ representation mostly for plotting or output purposes. Note on the grid numberin
 
     where physically i represents the y-axis and j the x-axis."""
 
-def h2mat(h):
-    return h.reshape((param['ny'],param['nx']))
+def h2mat(eta):
+    return eta.reshape((param['ny'],param['nx']))
 
 def u2mat(u):
     return u.reshape((param['ny'],param['nx']-1))
