@@ -13,9 +13,9 @@ def rhs(u,v,eta):
     a biharmonic lateral mixing term based on Shchepetkin and O'Brien (1996).
     """
     
-    #TODO param[nu_B] is large, applying the biharmonic creates tiny values (as dx^4 is large)
-    #TODO think about a way to avoid possibly involved rounding errors especially with single precision
-    #TODO might be efficiently only possible for dx=dy
+    #TODO change param[nu_B] to param[nu_B0] = param[nu_B]/1e12
+    #TODO introduce G0ux, G0vy, etc in units of 1/km
+    #TODO to avoid division by large and multiplication of large number: biharmonic term
     
     h = eta + param['H']    
     

@@ -10,19 +10,19 @@ def set_param():
     param['nx'] = 128               # number of grid points in x-direction
     param['ny'] = 128               # number of grid points in y-direction
     
-    param['Lx'] = 3840e3            # basin width L [meters]
-    param['Ly'] = 3840e3            # north-south basin extent [meters]
+    param['Lx'] = 3840            # basin width L [meters]
+    param['Ly'] = 3840            # north-south basin extent [meters]
     
     param['g'] = 10.                # gravitational acceleration [ms**-2]
     param['H'] = 500.               # water depth [m]   #TODO allow inhomogeneous H
     
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 20             # number of days to integrate
+    param['Ndays'] = 5             # number of days to integrate
     
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
     # initial conditions
-    param['initial_conditions'] = 'ncfile'   # 'rest' or 'ncfile'
+    param['initial_conditions'] = 'rest'   # 'rest' or 'ncfile'
     param['init_run_id'] = 1                 # only for starting from ncfile
     param['init_interpolation'] = 0          # for 'ncfile': allow initial interpolation in case grids do not match
     
@@ -33,7 +33,7 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 1             # or 0 for no data storage
+    param['output'] = 0             # or 0 for no data storage
     param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters
@@ -315,5 +315,8 @@ def set_friction():
         
     param['nu_A'] = 128*540./param['min_nxny']              # harmonic mixing coefficient
     param['nu_B'] = param['nu_A']*param['max_dxdy']**2      # biharmonic mixing coefficient
+    
+    #TODO
+    #param['nu_B0'] = param['nu_B']/1e12
     
     param['c_D'] = 5e-6                                     # bottom friction coefficient

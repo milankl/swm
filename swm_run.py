@@ -24,7 +24,7 @@ from __future__ import print_function       # tested with python 3.6 and 2.7.12
 
 # path
 import os
-path = os.getcwd() + '/'
+path = os.getcwd() + '/'         # this should be the path of this file
 
 # import modules
 import numpy as np                          # version 1.11.3-py36
