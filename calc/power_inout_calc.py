@@ -1,4 +1,4 @@
-## POWER INPUT EXIT COMPUTION AND PLOTTING
+## POWER INPUT EXIT CALCULATION
 from __future__ import print_function
 
 # path
@@ -59,7 +59,8 @@ for r in runfolder: # calculate each run separately
     print('h_u, h_v, h_q done.')
     
     ## input
-    InPower = ((u.T*Fx/h_u.T).T*param['rho']*param['H']).mean(axis=1)
+    # Fx is actually Fx/rho
+    InPower = param['rho']*(u.T*Fx).mean(axis=0)
     print('Input Power done.')
     
     # Shchepetkin and O'Brien divergence of a tensor formulation
@@ -67,22 +68,24 @@ for r in runfolder: # calculate each run separately
     diff_u = (GTx.dot(hS[0]) + Gqy.dot(hS[1])) / h_u
     diff_v = (Gqx.dot(hS[1]) - GTy.dot(hS[0])) / h_v
     
-    del hS
+    del hS, h_u, h_v
     
     # biharmonic stress tensor R = (R11, R12, R12, -R11), store only R11, R12
     hR = ((Gux.dot(diff_u) - Gvy.dot(diff_v))*h, (G2vx.dot(diff_v) + G2uy.dot(diff_u))*h_q)
     
     del h_q, diff_u, diff_v
     
-    bidiff_u = (GTx.dot(hR[0]) + Gqy.dot(hR[1])) / h_u
-    bidiff_v = (Gqx.dot(hR[1]) - GTy.dot(hR[0])) / h_v
+    bidiff_u = (GTx.dot(hR[0]) + Gqy.dot(hR[1]))
+    bidiff_v = (Gqx.dot(hR[1]) - GTy.dot(hR[0]))
     
-    del hR, h_u, h_v
+    del hR
     
     print('Biharmonic dissipation term done.')
     
-    ExPower_u = (param['nu_B']*(u*bidiff_u)*param['rho']*param['H']).mean(axis=1)
-    ExPower_v = (param['nu_B']*(v*bidiff_v)*param['rho']*param['H']).mean(axis=1)
+    ExPower_u = -param['nu_B']*param['rho']*(u*bidiff_u).mean(axis=1)
+    ExPower_v = -param['nu_B']*param['rho']*(v*bidiff_v).mean(axis=1)
+    
+    del bidiff_u, bidiff_v
     
     print('Exit Power done.')
     

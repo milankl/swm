@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from cmocean import cm
 
 # OPTIONS
-runfolder = [0,1,2]
+runfolder = [0,0,0]
 print('Produce energy mean plots from run ' + str(runfolder))
 
 ## read data
@@ -43,16 +43,10 @@ def q2mat(q,param):
     return q.reshape((param['ny']+1,param['nx']+1))
 
 ##
+expo = 1.   # stretching for visualization
 
-expo = 1.   # for visualization
-
-for v in ['mke','eke']:
-    D1[v] = (D1[v]/1e3)**expo
-    D2[v] = (D2[v]/1e3)**expo
-    D3[v] = (D3[v]/1e3)**expo
-
-for v in ['epe','mpe']:
-    D1[v] = (D1[v]/1e3)**expo
+for v in ['mke','eke','mpe','epe','ke','pe']:
+    D1[v] = (D1[v]/1e3)**expo       # from joule to kilojoule by /1e3
     D2[v] = (D2[v]/1e3)**expo
     D3[v] = (D3[v]/1e3)**expo
 
@@ -60,7 +54,6 @@ for v in ['epe','mpe']:
 levs=[]
 for v in ['mke','eke','mpe','epe']:
     maxs = np.max((np.max(D1[v]),np.max(D2[v]),np.max(D3[v])))
-    #mins = np.min((np.min(D1[v]),np.min(D2[v])))
     levs.append(np.linspace(0,maxs*0.95,64))
 
 fig,axs = plt.subplots(3,4,figsize=(9,7.5),sharex=True,sharey=True)
@@ -74,7 +67,7 @@ for i in range(n):
 
 qaxs = np.empty_like(axs)
 
-tiks = [np.array([0,50,100,150,200,250]),np.array([0,250,500,750,1000]),np.array([0,2.5,5,7.5,10]),np.array([0,10,20,30,40,50])]
+tiks = [np.array([0,100,200,300]),np.array([0,100,200,300]),np.array([0,1,2,3,4,5]),np.array([0,1,2,3,4,5])]
 
 qaxs[0,0] = axs[0,0].contourf(param1['x_T'],param1['y_T'],h2mat(D1['mke'],param1),levs[0],cmap=cm.thermal,extend='max')
 cb1 = fig.colorbar(qaxs[0,0],cax=caxs[0],orientation='horizontal',ticks=tiks[0]**expo)
@@ -94,7 +87,7 @@ cb3.set_label(r'[kJm$^{-2}$]')
 qaxs[0,3] = axs[0,3].contourf(param1['x_T'],param1['y_T'],h2mat(D1['epe'],param1),levs[3],cmap=cm.thermal,extend='max')
 cb4 = fig.colorbar(qaxs[0,3],cax=caxs[3],orientation='horizontal',ticks=tiks[3]**expo)
 cb4.set_ticklabels(tiks[3])
-cb4.set_label(r'[$kJm^{-2}$]')
+cb4.set_label(r'[kJm$^{-2}$]')
 
 axs[1,0].contourf(param3['x_T'],param3['y_T'],h2mat(D3['mke'],param3),levs[0],cmap=cm.thermal,extend='max')
 axs[1,1].contourf(param3['x_T'],param3['y_T'],h2mat(D3['eke'],param3),levs[1],cmap=cm.thermal,extend='max')    

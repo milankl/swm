@@ -10,13 +10,13 @@ import numpy as np
 from netCDF4 import Dataset
 
 # OPTIONS
-runfolder = [1,2]
+runfolder = [0]
 
 for r in runfolder:    
     print(('Subsampling from run %i') % r)
     
     runpath = path+'data/run%04i' % r
-    sub = 4     # read only every sub-th time step 
+    sub = 1     # read only every sub-th time step 
     
     ncu = Dataset(runpath+'/u.nc')
     u = ncu['u'][:][::sub,:,:]
@@ -37,6 +37,6 @@ for r in runfolder:
     t = nceta['t'][::sub]   # in seconds
     nceta.close()
     print('eta read.')
-    np.save(runpath+'/eta_sub.npy',h)
+    np.save(runpath+'/eta_sub.npy',eta)
     np.save(runpath+'/t_sub.npy',t)
-    del h,t
+    del eta,t

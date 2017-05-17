@@ -17,12 +17,12 @@ def set_param():
     param['H'] = 500.               # water depth [m]   #TODO allow inhomogeneous H
     
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 20             # number of days to integrate
+    param['Ndays'] = 10             # number of days to integrate
     
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
     
     # initial conditions
-    param['initial_conditions'] = 'ncfile'   # 'rest' or 'ncfile'
+    param['initial_conditions'] = 'rest'     # 'rest' or 'ncfile'
     param['init_run_id'] = 1                 # only for starting from ncfile
     param['init_interpolation'] = 0          # for 'ncfile': allow initial interpolation in case grids do not match
     
@@ -33,8 +33,8 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 1             # or 0 for no data storage
-    param['output_dt'] = 6*3600     # every hours*3600 therefore in seconds
+    param['output'] = 0             # or 0 for no data storage
+    param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
     
     ## SET UP derived parameters
     set_grid()
@@ -153,7 +153,7 @@ def set_forcing():
 
 ## SET TIME STEPPING
 def set_timestep():
-    # shallow water phase speed
+    # shallow water gravity wave phase speed
     param['c_phase'] = np.sqrt(param['g']*param['H'])   
     
     # the model timestep dt based on cfl stability criterion to resolve gravity waves

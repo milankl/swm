@@ -38,16 +38,16 @@ def rhs(u,v,eta):
     
     ## ADVECTION
     # Sadourny, 1975 enstrophy conserving scheme.
-    #adv_u = (Iqu*q)*(Ivu*V)
-    #adv_v = -(Iqv*q)*(Iuv*U)
+    # adv_u = (Iqu*q)*(Ivu*V)
+    # adv_v = -(Iqv*q)*(Iuv*U)
     
     # Arakawa and Lamb, 1981
     adv_u, adv_v = ALadvection(q,U,V)
     
     ## LATERAL MIXING OPERATOR
     # crude but simple bi-harmonic mixing
-    #bidiff_u = param['nu_B']*(LLu*u)
-    #bidiff_v = param['nu_B']*(LLv*v)                      
+    # bidiff_u = param['nu_B']*(LLu*u)
+    # bidiff_v = param['nu_B']*(LLv*v)                      
     
     # symmetric stress tensor S = (S11, S12, S12, -S11), store only S11, S12
     S = (Gux*u - Gvy*v,G2vx*v + G2uy*u)
