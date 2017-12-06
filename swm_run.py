@@ -15,8 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-A documentation, in a preliminary version though, is available via
-http://www.github.com/milankl/swm/docu/swm_documentation.pdf
+A documentation is available at
+http://www.github.com/milankl/swm/docu
 
 """
 
