@@ -1,0 +1,9 @@
+setup.py
+Parallel_Sparse_matrix_calculations.egg-info/PKG-INFO
+Parallel_Sparse_matrix_calculations.egg-info/SOURCES.txt
+Parallel_Sparse_matrix_calculations.egg-info/dependency_links.txt
+Parallel_Sparse_matrix_calculations.egg-info/requires.txt
+Parallel_Sparse_matrix_calculations.egg-info/top_level.txt
+parallel_sparsetools/__init__.py
+parallel_sparsetools/parallel_csr.cxx
+parallel_sparsetools/parallel_sparsetools.cxx
