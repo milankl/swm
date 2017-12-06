@@ -36,12 +36,6 @@ def set_param():
     param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
 
-    ## parallel matrix vector multiplication
-    # uncomment the following two lines if _parallel_sparsetools is not available
-    # depending on computing architecture might speed up on 1-4 cores
-    os.environ['OMP_NUM_THREADS'] = str(1)          # change number of cores here
-    sparse.csr_matrix._mul_vector = _mul_vector     # replace the matrix .dot method for convenience
-
     ## SET UP derived parameters
     set_grid()
     set_friction()
