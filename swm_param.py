@@ -33,7 +33,7 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 1             # or 0 for no data storage
+    param['output'] = 0             # or 0 for no data storage
     param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
 
     ## SET UP derived parameters
@@ -50,7 +50,11 @@ def set_param():
     set_arakawa_mat()   # set up the interpolation matrices for the Arakawa and Lamb scheme
     set_forcing()       # sets the wind forcing
 
-
+    ## parallel matrix vector multiplication
+    # uncomment the following two lines if _parallel_sparsetools is not available
+    # depending on computing architecture might speed up on 1-4 cores (up to 2.5x faster on some machines)
+    os.environ['OMP_NUM_THREADS'] = str(1)          # change number of cores here
+    sparse.csr_matrix._mul_vector = _mul_vector     # replace the matrix .dot method for convenience
 
     u,v,eta = initial_conditions()
     return u,v,eta
@@ -319,3 +323,17 @@ def set_friction():
     param['nu_B'] = param['nu_A']*param['max_dxdy']**2      # biharmonic mixing coefficient
 
     param['c_D'] = 5e-6                                     # bottom friction coefficient
+
+
+def _mul_vector(self, other):
+    """ parallel matrix-vector multiplication to replace the built-in csr_matvec function."""
+    M,N = self.shape
+
+    # output array
+    result = np.empty(M, dtype=sparse.sputils.upcast_char(self.dtype.char,
+                                                      other.dtype.char))
+    # csr_matvec or csc_matvec
+    fn = _parallel_sparsetools.csr_matvec
+    fn(M, N, self.indptr, self.indices, self.data, other, result)
+
+    return result
