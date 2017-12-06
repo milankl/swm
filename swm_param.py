@@ -50,6 +50,8 @@ def set_param():
     set_arakawa_mat()   # set up the interpolation matrices for the Arakawa and Lamb scheme
     set_forcing()       # sets the wind forcing
 
+
+
     u,v,eta = initial_conditions()
     return u,v,eta
 
