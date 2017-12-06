@@ -16,8 +16,8 @@ def set_param():
     param['g'] = 10.                # gravitational acceleration [ms**-2]
     param['H'] = 500.               # water depth [m]
 
-    param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 10             # number of days to integrate
+    param['cfl'] = .9               # desired CFL-criterion for RK4
+    param['Ndays'] = 5             # number of days to integrate
 
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
 
@@ -28,9 +28,6 @@ def set_param():
 
     # boundary conditions
     param['lbc'] = 2                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
-
-    # time stepping allowed: RK3 (max cfl .6), RK4 (max cfl .9, best performance!), AB1-5 (max cfl .2 or less)
-    param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
     param['output'] = 1             # or 0 for no data storage
@@ -269,6 +266,10 @@ def initial_conditions():
             param_old['ny'] = init_nceta.ny
 
             u_0,v_0,eta_0 = init_interpolation(u_0,v_0,eta_0,param_old)
+            # reuse the same function also for the interpolation of e
+            # assumes no gradient of e across boundaries - probably problematic?
+            # TODO clean this up!
+            e_0 = init_interpolation(u_0,v_0,e_0,param_old)[-1]
 
         else:
             u_0 = u_0.flatten().astype(param['dat_type'])
@@ -330,7 +331,10 @@ def set_friction():
     param['nu_A'] = 128*540./param['min_nxny']              # harmonic mixing coefficient
     param['nu_B'] = param['nu_A']*param['max_dxdy']**2      # biharmonic mixing coefficient
 
-    param['c_D'] = 5e-6                                     # bottom friction coefficient
+    param['c_D'] = 1e-5                                     # bottom friction coefficient
+
+    # for backscatter
+    param['nu_e'] = param['nu_A']                           # similar to Jansen et al 2015
 
 def _mul_vector(self, other):
     M,N = self.shape
