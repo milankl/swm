@@ -66,14 +66,10 @@ def rhs(u,v,eta,e):
 
     ## backscatter
     D2 = S[0]**2 + IqT.dot(S[1]**2)            # Deformation rate squared
-    #c_diss = 1./(1+np.sqrt(D2)/f_T)**(param['n_diss'])   # D/f = Ro, the Rossby number for subgrid-EKE
-
-    # NEW VERSION
-    c_diss = 1./(1+(np.sqrt(D2)/f_T)**param['n_diss'])
+    c_diss = 1./(1+(np.sqrt(D2)/f_T)**param['n_diss'])   # D/f = Ro, the Rossby number for subgrid-EKE
 
     e_over_h = e/h
     nu_back = -param['c_back']*param['max_dxdy']*np.sqrt(2*e_over_h.clip(0,e_over_h.max()))
-    #diff_e = param['nu_e']*(Gux.dot(h_u*GTx.dot(e)) + Gvy.dot(h_v*GTy.dot(e)))/h
     diff_e = param['nu_e']*LT.dot(e)
     E_back = nu_back*h*D2
     E_diss = c_diss*param['nu_B']*(hS[0]*R[0] + IqT.dot(hS[1]*R[1]))

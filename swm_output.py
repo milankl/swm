@@ -82,7 +82,7 @@ def output_nc_ini():
     global ncfiles
     ncfiles = [ncu,ncv,nceta,nce]
 
-    output_txt('Output will be stored in '+param['runfolder']+' every %i hours.' % (param['output_dt']/3600.))
+    output_txt('Output will be stored in '+param['outputpath']+param['runfolder']+' every %i hours.' % (param['output_dt']/3600.))
 
 
 def output_nc(u,v,eta,e,t):

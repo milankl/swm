@@ -32,6 +32,7 @@ def set_param():
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
     param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
+    param['outputpath'] = ''   # sets the path for netcdf output, else choose ''
 
     # for backscatter
     param['c_back'] = 0.4
@@ -188,13 +189,16 @@ def set_output():
     # set up next run folder run????
     if param['output']:
         cwd = os.getcwd()   # get current directory for switching back later
-        try:
-            os.chdir(param['path']+'/data')
-        except:
-            os.mkdir(param['path']+'/data')
-            os.chdir(param['path']+'/data')
+        if param['outputpath'] == '':   # no specific outputpath provided
+            try: # in case the data folder does not exist create it
+                os.chdir(param['path']+'/data')
+            except:
+                os.mkdir(param['path']+'/data')
+                os.chdir(param['path']+'/data')
+        else:
+            os.chdir(param['outputpath'])
 
-        all_runs = glob.glob('run*')
+        all_runs = glob.glob('run????')
         if not all_runs:    # empty list
             param['run_id'] = 0
         else:               # add a new run id by taking the largest existing number and +1
@@ -202,7 +206,11 @@ def set_output():
 
         param['runfolder'] = 'run%04i' % param['run_id']
         os.mkdir(param['runfolder'])
-        param['output_runpath'] = param['path']+'data/'+param['runfolder']
+        if param['outputpath'] == '':
+            param['output_runpath'] = param['path']+'data/'+param['runfolder']
+        else:
+            param['output_runpath'] = param['outputpath']+param['runfolder']
+
         os.chdir(cwd)       # switch back to old directory
 
         # Save grid information in txt file
