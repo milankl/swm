@@ -23,18 +23,15 @@ http://www.github.com/milankl/swm/docu
 
 # HOW TO INSTALL
 
-(i)  This shallow water model requires the modules that are loaded in this script.
-(ii) For the parallel matrix-vector multiplication from parallel_sparsetools, go to that
-     folder and do:
+For the parallel matrix-vector multiplication from parallel_sparsetools, go to that folder and do:
+     
+     python setup.py install
+     
+Otherwise uncomment the line 'import _parallel_sparsetools' in this script and
 
-        > python setup.py install
+     os.environ['OMP_NUM_THREADS'] = str(1)
+     sparse.csr_matrix._mul_vector = _mul_vector
 
-    Otherwise uncomment the line 'import _parallel_sparsetools' in this script and
-
-        os.environ['OMP_NUM_THREADS'] = str(1)
-        sparse.csr_matrix._mul_vector = _mul_vector
-
-    in swm_param.py. parallel_sparsetools might yield a speed-up of up to 2.5x for up to 4 cores
-    on some machines.
+in swm_param.py. parallel_sparsetools might yield a speed-up of up to 2.5x for up to 4 cores on some machines.
 
 Copyright (C) 2017,  Milan Kloewer (milan.kloewer@physics.ox.ac.uk, milank.de)
