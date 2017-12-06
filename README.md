@@ -27,7 +27,11 @@ For the parallel matrix-vector multiplication from parallel_sparsetools, go to t
      
      python setup.py install
      
-Otherwise uncomment the line 'import _parallel_sparsetools' in this script and
+Otherwise uncomment the line 
+
+     import _parallel_sparsetools
+     
+in swm_run.py, and
 
      os.environ['OMP_NUM_THREADS'] = str(1)
      sparse.csr_matrix._mul_vector = _mul_vector
