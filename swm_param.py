@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]
 
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 10             # number of days to integrate
+    param['Ndays'] = 5              # number of days to integrate
 
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
 
