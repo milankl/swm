@@ -9,7 +9,7 @@ def time_integration(u,v,eta,e):
 
     global i
     for i in range(param['Nt']):
-        duvetae = RK4(u,v,eta,e)
+        duvetae = RK4(u,v,eta,e)    # only RK4 allowed - other explicit schemes are inferior
         u += dt*duvetae[0]
         v += dt*duvetae[1]
         eta += dt*duvetae[2]
@@ -53,7 +53,7 @@ def feedback_ini(u,v,eta,e,t):
 
         # Store information in txt file
         output_txt('Integrating %.1f days with dt=%.2f min in %i time steps' % (param['Ndays'],dt/60.,param['Nt']))
-        output_txt('Time integration scheme is '+param['scheme']+' with CFL = %.2f' % param['cfl'])
+        output_txt('Time integration scheme is RK4 with CFL = %.2f' % param['cfl'])
         output_txt('')
         output_txt('Starting shallow water model on '+tictoc.asctime())
         print(('Starting shallow water model run %i on ' % param['run_id'])+tictoc.asctime())
