@@ -36,6 +36,16 @@ def set_param():
     param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
 
+    # for backscatter
+    param['c_back'] = 0.4
+    param['n_diss'] = 2.
+
+    ## parallel matrix vector multiplication
+    # uncomment the following two lines if _parallel_sparsetools is not available
+    # depending on computing architecture might speed up on 1-4 cores (up to 2.5x faster on some machines)
+    os.environ['OMP_NUM_THREADS'] = str(1)          # change number of cores here
+    sparse.csr_matrix._mul_vector = _mul_vector     # replace the matrix .dot method for convenience
+
     ## SET UP derived parameters
     set_grid()
     set_friction()
@@ -50,8 +60,8 @@ def set_param():
     set_arakawa_mat()   # set up the interpolation matrices for the Arakawa and Lamb scheme
     set_forcing()       # sets the wind forcing
 
-    u,v,eta = initial_conditions()
-    return u,v,eta
+    u,v,eta,e = initial_conditions()
+    return u,v,eta,e
 
 ## grid parameters
 def set_grid():
@@ -213,7 +223,7 @@ def set_output():
         # Save all scripts as zipped file
         output_scripts()
 
-## INITIALIZE PROGNOSTIC VARIABLES u,v,eta
+## INITIALIZE PROGNOSTIC VARIABLES u,v,eta and sub-grid EKE e
 def initial_conditions():
     """ Preallocates and sets the initial conditions for u,v,eta. """
 
@@ -221,6 +231,7 @@ def initial_conditions():
         u_0 = np.zeros(param['Nu']).astype(param['dat_type'])
         v_0 = np.zeros(param['Nv']).astype(param['dat_type'])
         eta_0 = (np.zeros(param['NT'])).astype(param['dat_type'])
+        e_0 = (np.zeros(param['NT'])).astype(param['dat_type'])
         param['t0'] = 0
 
     elif param['initial_conditions'] == 'ncfile':
@@ -228,10 +239,12 @@ def initial_conditions():
         init_ncu = Dataset(initpath+'/u.nc')
         init_ncv = Dataset(initpath+'/v.nc')
         init_nceta = Dataset(initpath+'/eta.nc')
+        init_nce = Dataset(initpath+'/e.nc')
 
         u_0 = init_ncu['u'][-1,:,:]
         v_0 = init_ncv['v'][-1,:,:]
         eta_0 = init_nceta['eta'][-1,:,:]
+        e_0 = init_nce['e'][-1,:,:]
         param['t0'] = init_nceta['t'][-1]
         output_txt('Starting from last state of run %04i' % param['init_run_id'])
 
@@ -261,8 +274,9 @@ def initial_conditions():
             u_0 = u_0.flatten().astype(param['dat_type'])
             v_0 = v_0.flatten().astype(param['dat_type'])
             eta_0 = eta_0.flatten().astype(param['dat_type'])
+            e_0 = e_0.flatten().astype(param['dat_type'])
 
-    return u_0,v_0,eta_0
+    return u_0,v_0,eta_0,e_0
 
 def init_interpolation(u_0,v_0,eta_0,param_old):
     """ Performs an initial interpolation in case the grids do not match. """
@@ -317,3 +331,15 @@ def set_friction():
     param['nu_B'] = param['nu_A']*param['max_dxdy']**2      # biharmonic mixing coefficient
 
     param['c_D'] = 5e-6                                     # bottom friction coefficient
+
+def _mul_vector(self, other):
+    M,N = self.shape
+
+    # output array
+    result = np.empty(M, dtype=sparse.sputils.upcast_char(self.dtype.char,
+                                                      other.dtype.char))
+    # csr_matvec or csc_matvec
+    fn = _parallel_sparsetools.csr_matvec
+    fn(M, N, self.indptr, self.indices, self.data, other, result)
+
+    return result
