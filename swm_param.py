@@ -33,9 +33,9 @@ def set_param():
     param['scheme'] = 'RK4'
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
-    param['output'] = 0             # or 0 for no data storage
+    param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
-    param['outputpath'] = '' # sets the path for netcdf output, else choose ''
+    param['outputpath'] = '/home/kloewer/' # sets the path for netcdf output, else choose ''
 
     ## SET UP derived parameters
     set_grid()
@@ -209,7 +209,7 @@ def set_output():
             param['output_runpath'] = param['path']+'data/'+param['runfolder']
         else:
             param['output_runpath'] = param['outputpath']+param['runfolder']
-            
+
         os.chdir(cwd)       # switch back to old directory
 
         # Save grid information in txt file
