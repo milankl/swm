@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]
 
     param['cfl'] = .9               # desired CFL-criterion for RK4
-    param['Ndays'] = 5             # number of days to integrate
+    param['Ndays'] = 30*365             # number of days to integrate
 
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
 
@@ -31,12 +31,13 @@ def set_param():
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
     param['output'] = 1             # or 0 for no data storage
-    param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
-    param['outputpath'] = ''   # sets the path for netcdf output, else choose ''
+    param['output_dt'] = 6*3600    # every hours*3600 therefore in seconds
+    param['outputpath'] = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'   # sets the path for netcdf output, else choose ''
+    #param['outputpath'] = ''
 
     # for backscatter
     param['c_back'] = 0.4
-    param['n_diss'] = 2.
+    param['n_diss'] = 4.0
 
     ## parallel matrix vector multiplication
     # uncomment the following two lines if _parallel_sparsetools is not available
