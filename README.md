@@ -24,7 +24,7 @@ For the parallel matrix-vector multiplication from parallel_sparsetools, go to t
      
      python setup.py install
      
-Otherwise uncomment the line 
+Otherwise comment the line 
 
      import _parallel_sparsetools
      
