@@ -34,15 +34,17 @@ def output_nc_ini():
     # create dimensions
     ncu['xdim'] = ncu['file'].createDimension('x',param['nx']-1)
     ncu['ydim'] = ncu['file'].createDimension('y',param['ny'])
-    ncu['tdim'] = ncu['file'].createDimension('t',param['output_tlen'])
+    #ncu['tdim'] = ncu['file'].createDimension('t',param['output_tlen'])
+    ncu['tdim'] = ncu['file'].createDimension('t',None)
+
 
     ncv['xdim'] = ncv['file'].createDimension('x',param['nx'])
     ncv['ydim'] = ncv['file'].createDimension('y',param['ny']-1)
-    ncv['tdim'] = ncv['file'].createDimension('t',param['output_tlen'])
+    ncv['tdim'] = ncv['file'].createDimension('t',None)
 
     nceta['xdim'] = nceta['file'].createDimension('x',param['nx'])
     nceta['ydim'] = nceta['file'].createDimension('y',param['ny'])
-    nceta['tdim'] = nceta['file'].createDimension('t',param['output_tlen'])
+    nceta['tdim'] = nceta['file'].createDimension('t',None)
 
     # create variables
     p = 'f4' # 32-bit precision storing, or f8 for 64bit
@@ -121,12 +123,13 @@ def readable_secs(secs):
 
 def duration_est(tic):
     """ Saves an estimate for the total time the model integration will take in the output txt file. """
+    time_togo = (tictoc.time()-tic) / (i+1) * param['Nt']
+    str1 = 'Model integration will take approximately '+readable_secs(time_togo)+', '
+    print(str1)
+
     if param['output']:
-        time_togo = (tictoc.time()-tic) / (i+1) * param['Nt']
-        str1 = 'Model integration will take approximately '+readable_secs(time_togo)+', '
         str2 = 'and is hopefully done on '+tictoc.asctime(tictoc.localtime(tic + time_togo))
         output_txt(str1+str2)
-        print(str1)
         print(str2)
 
 def output_txt_ini():

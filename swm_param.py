@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]
 
     param['cfl'] = .9               # desired CFL-criterion
-    param['Ndays'] = 5              # number of days to integrate
+    param['Ndays'] = 30              # number of days to integrate
 
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
 
@@ -34,8 +34,8 @@ def set_param():
 
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
     param['output'] = 1             # or 0 for no data storage
-    param['output_dt'] = 24*3600    # every hours*3600 therefore in seconds
-    param['outputpath'] = '/home/kloewer/' # sets the path for netcdf output, else choose ''
+    param['output_dt'] = 6*3600    # every hours*3600 therefore in seconds
+    param['outputpath'] = '' # sets the path for netcdf output, else choose ''
 
     ## SET UP derived parameters
     set_grid()
@@ -54,8 +54,8 @@ def set_param():
     ## parallel matrix vector multiplication
     # uncomment the following two lines if _parallel_sparsetools is not available
     # depending on computing architecture might speed up on 1-4 cores (up to 2.5x faster on some machines)
-    os.environ['OMP_NUM_THREADS'] = str(1)          # change number of cores here
-    sparse.csr_matrix._mul_vector = _mul_vector     # replace the matrix .dot method for convenience
+    #os.environ['OMP_NUM_THREADS'] = str(1)          # change number of cores here
+    #sparse.csr_matrix._mul_vector = _mul_vector     # replace the matrix .dot method for convenience
 
     u,v,eta = initial_conditions()
     return u,v,eta

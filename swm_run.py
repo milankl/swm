@@ -12,7 +12,7 @@ import time as tictoc
 from netCDF4 import Dataset                 # version 1.2.4-py36, hdf5 version 1.8.17-py36, hdf4 version 4.2.12-py36
 import glob
 import zipfile
-import _parallel_sparsetools                # uncomment if not available
+#import _parallel_sparsetools                # uncomment if not available
 
 ## import all functions
 exec(open(path+'swm_param.py').read())
