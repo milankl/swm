@@ -12,15 +12,15 @@ from scipy import sparse
 
 # OPTIONS
 runfolder = [5]
-print('Calculating means from run ' + str(runfolder))
+print('Calculating timeseries from run ' + str(runfolder))
 
 ## read data
 for r,i in zip(runfolder,range(len(runfolder))):
     runpath = path+'run%04i' % r
 
     if i == 0:
-        skip = 5*365
-        #skip = 0
+        #skip = 5*365
+        skip = 0
         u = np.load(runpath+'/u_sub.npy')[skip:,...]
         v = np.load(runpath+'/v_sub.npy')[skip:,...]
         eta = np.load(runpath+'/eta_sub.npy')[skip:,...]
@@ -40,7 +40,6 @@ global param
 param = np.load(runpath+'/param.npy').all()
 
 # import functions
-
 exec(open(funpath+'swm_param.py').read())
 exec(open(funpath+'swm_operators.py').read())
 
@@ -64,38 +63,38 @@ print('Reshape done.')
 
 ## U,V,H mean
 # thickness-weighted averaging for u,v (Aiki, 2016)
-etam = eta.mean(axis=1)             # temporal average
-um = (ITu.dot(eta + param['H'])*u).mean(axis=1) / ITu.dot(etam + param['H'])
-vm = (ITv.dot(eta + param['H'])*v).mean(axis=1) / ITv.dot(etam + param['H'])
-print('u,v,eta mean done.')
+#etam = eta.mean(axis=1)             # temporal average
+#um = (ITu.dot(eta + param['H'])*u).mean(axis=1) / ITu.dot(etam + param['H'])
+#vm = (ITv.dot(eta + param['H'])*v).mean(axis=1) / ITv.dot(etam + param['H'])
+#print('u,v,eta mean done.')
 
 # TOTAL KINETIC ENERGY
-ke = .5*param['rho']*((eta+param['H'])*(IuT.dot(u**2) + IvT.dot(v**2))).mean(axis=1)
+#ke = .5*param['rho']*((eta+param['H'])*(IuT.dot(u**2) + IvT.dot(v**2))).mean(axis=1)
 # TOTAL (PERTURBATION) POTENTIAL ENERGY
-pe = .5*param['rho']*param['g']*(eta**2).mean(axis=1)
-print('KE, PE done.')
+#pe = .5*param['rho']*param['g']*(eta**2).mean(axis=1)
+#print('KE, PE done.')
 
 # MEAN KINETIC ENERGY
-mke = .5*param['rho']*(etam+param['H'])*(IuT.dot(um**2) + IvT.dot(vm**2))
+#mke = .5*param['rho']*(etam+param['H'])*(IuT.dot(um**2) + IvT.dot(vm**2))
 # Mean Potential Energy
-mpe = .5*param['g']*param['rho']*etam**2
-print('MKE, MPE done.')
+#mpe = .5*param['g']*param['rho']*etam**2
+#print('MKE, MPE done.')
 
 # Eddy potential energy
-epe = .5*param['rho']*param['g']*eta.var(axis=1)
+#epe = .5*param['rho']*param['g']*eta.var(axis=1)
 
 # Eddy kinetic energy
-uprime = ((u.T - um).T)
-vprime = ((v.T - vm).T)
-print('Prime anomalies done.')
+#uprime = ((u.T - um).T)
+#vprime = ((v.T - vm).T)
+#print('Prime anomalies done.')
 
-eke = .5*param['rho']*((eta+param['H'])*(IuT.dot(uprime**2) + IvT.dot(vprime**2))).mean(axis=1)
-print('EPE, EKE done.')
-del uprime,vprime
+#eke = .5*param['rho']*((eta+param['H'])*(IuT.dot(uprime**2) + IvT.dot(vprime**2))).mean(axis=1)
+#print('EPE, EKE done.')
+#del uprime,vprime
 
 # SPEED MEAN
-speedm = np.sqrt(IuT.dot(u**2) + IvT.dot(v**2)).mean(axis=1)
-print('Rel Vort, Speed done.')
+#speedm = np.sqrt(IuT.dot(u**2) + IvT.dot(v**2)).mean(axis=1)
+#print('Rel Vort, Speed done.')
 
 ## ENERGY TIME SERIES
 PEm = (.5*param['g']*param['rho']*eta**2).mean(axis=0)
@@ -106,11 +105,11 @@ print('Kinetic Energy done.')
 
 ## STORING
 dic = dict()
-all_var2export = ['um','vm','etam','ke','pe','mke','eke','mpe','epe','speedm']
-#all_var2export = ['t','PEm','KEm']
+#all_var2export = ['um','vm','etam','ke','pe','mke','eke','mpe','epe','speedm']
+all_var2export = ['t','PEm','KEm']
 
 for v in all_var2export:
     exec('dic[v] ='+v)
 
-np.save(runpath+'/analysis/mean.npy',dic)
+np.save(runpath+'/analysis/mean_timeseries.npy',dic)
 print('Everything stored.')

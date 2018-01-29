@@ -3,7 +3,8 @@ from __future__ import print_function
 
 # path
 import os
-path = os.path.dirname(os.getcwd()) + '/'   # on level above
+#path = os.path.dirname(os.getcwd()) + '/'   # on level above
+path = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'
 os.chdir(path)                              # change working directory
 
 import numpy as np
@@ -11,7 +12,7 @@ from scipy import sparse
 
 # OPTIONS
 # several entries in the list concatenates the runs and stores the result in the last folder
-runfolder = [2]     
+runfolder = [5]     
 print('Calculating eke spectrum from run ' + str(runfolder))
 
 ##
@@ -64,12 +65,13 @@ def eke_spec_avg(u,v,dx,dy):
 
 ## read data
 for r,i in zip(runfolder,range(len(runfolder))):
-    runpath = path+'data/run%04i' % r
+    runpath = path+'run%04i' % r
     
     if i == 0:
-        u = np.load(runpath+'/u_sub.npy')
-        v = np.load(runpath+'/v_sub.npy')
-        t = np.load(runpath+'/t_sub.npy')
+        skip = 5*365
+        u = np.load(runpath+'/u_sub.npy')[skip:,...]
+        v = np.load(runpath+'/v_sub.npy')[skip:,...]
+        t = np.load(runpath+'/t_sub.npy')[skip:,...]
         print('run %i read.' % r)
 
     else:
