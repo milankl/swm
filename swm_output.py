@@ -166,4 +166,12 @@ def output_param():
         # filter out 'output_txtfile' as this is a unsaveable textwrapper
         dict_tmp = {key:param[key] for key in param.keys() if key != 'output_txtfile'}
         np.save(param['output_runpath']+'/param.npy',dict_tmp)
-        output_txt('Param dictionary stored.\n')
+
+        # store also as a more readable .txt file for quick access on the parameters
+        param_txtfile = open(param['output_runpath']+'/param.txt','w')
+        for key in dict_tmp.keys():
+            if not(key in ['x_T','y_T','x_u','y_u','x_v','y_v','x_q','y_q']):
+                param_txtfile.write(key + 2*'\t' + str(dict_tmp[key]) + '\n')
+
+        param_txtfile.close()
+        output_txt('Param dictionary stored as txt and zip.\n')
