@@ -7,8 +7,8 @@ def set_param():
     param = dict()
 
     ## parameters
-    param['nx'] = 64               # number of grid points in x-direction
-    param['ny'] = 64               # number of grid points in y-direction
+    param['nx'] = 256               # number of grid points in x-direction
+    param['ny'] = 256               # number of grid points in y-direction
 
     param['Lx'] = 3840e3            # basin width L [meters]
     param['Ly'] = 3840e3            # north-south basin extent [meters]
@@ -17,7 +17,7 @@ def set_param():
     param['H'] = 500.               # water depth [m]
 
     param['cfl'] = .9               # desired CFL-criterion, recommended 0.9, uses RK4
-    param['Ndays'] = 200             # number of days to integrate
+    param['Ndays'] = 5*365             # number of days to integrate
 
     param['dat_type'] = np.float32  # single/double precision use np.float32 or np.float64
 
@@ -27,7 +27,7 @@ def set_param():
     param['init_interpolation'] = 0          # for 'ncfile': allow initial interpolation in case grids do not match
 
     # boundary conditions
-    param['lbc'] = 2                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
+    param['lbc'] = 0                         # no-slip: lbc=2, free-slip: lbc=0, 0<lbc<2 means partial-slip
 
     # bottom friction coefficient
     param['c_D'] = 1e-5
@@ -38,7 +38,7 @@ def set_param():
     # OUTPUT - of netcdf4, info_txt, parameters and scripts
     param['output'] = 1             # or 0 for no data storage
     param['output_dt'] = 6*3600    # every hours*3600 therefore in seconds
-    param['outputpath'] = '' # sets the path for netcdf output, else choose ''
+    param['outputpath'] = '/network/aopp/cirrus/pred/kloewer/swm_bf_cntrl/' # sets the path for netcdf output, else choose ''
 
     ## SET UP derived parameters
     set_grid()
