@@ -1,7 +1,7 @@
 # Shallow water model
 Shallow water equations solver with finite differences. Arakawa C-grid, Arakawa and Lamb advection scheme, Shchepetkin and O'Brian-like biharmonic diffusion operator. 4th order Runge-Kutta for time integration.
 
-A documentation is available at http://www.github.com/milankl/swm/docu
+A documentation is available at http://www.github.com/milankl/swm/tree/master/docu
 
 This model is written in python, relies on numpy, scipy and netCDF4.
 
