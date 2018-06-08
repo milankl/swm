@@ -24,4 +24,4 @@ You may want to change settings in swm_param.py before you run the model. Then s
 
      python swm_run.py
 
-Copyright (C) 2017,  Milan Kloewer (milan.kloewer@physics.ox.ac.uk, milank.de)
+Copyright (C) 2018,  Milan Kloewer (milan.kloewer@physics.ox.ac.uk, milank.de)
