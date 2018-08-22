@@ -3,9 +3,9 @@ from __future__ import print_function
 
 # path
 import os
-funpath = '/network/home/aopp/kloewer/git/swm/'
-path = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'
-os.chdir(path)                              # change working directory
+funpath = '/network/home/aopp/kloewer/git/swm/'             # path for functions swm_operators.py etc
+path = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'  # path for data
+os.chdir(path)
 
 import numpy as np
 from scipy import sparse

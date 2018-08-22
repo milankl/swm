@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 path1 = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'
-path2 = '/home/kloewer/strix/'
+path2 = '/network/aopp/cirrus/pred/kloewer/swm_bf_cntrl/data/'
 outpath = '/network/home/aopp/kloewer/swm/paperplot/'
 
 import numpy as np
@@ -14,7 +14,7 @@ plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['mathtext.rm'] = 'serif'
 
 # OPTIONS
-runfolder = [0,6,2]
+runfolder = [0,6,3]
 print('Compare mean plots from run ' + str(runfolder))
 
 ## read data
@@ -86,7 +86,7 @@ levs=[]
 for v in ['mke','eke','mpe','epe']:
     maxs = np.max((np.max(D1[v]),np.max(D2[v])))
     #mins = np.min((np.min(D1[v]),np.min(D2[v])))
-    levs.append(np.linspace(0,maxs*0.95,64))
+    levs.append(np.linspace(0,maxs*0.95,32))
 
 fig,axs = plt.subplots(3,4,figsize=(12,9),sharex=True,sharey=True)
 plt.tight_layout(rect=[0,.08,1,0.98])
@@ -106,22 +106,22 @@ tiks = [np.array([0,100,200,300,400]),np.array([0,100,200,300,400]),np.array([0,
 qaxs[0,0] = axs[0,0].contourf(param1['x_T'],param1['y_T'],h2mat(D1['mke'],param1),levs[0],cmap=cm.thermal,extend='max')
 cb1 = fig.colorbar(qaxs[0,0],cax=caxs[0],orientation='horizontal',ticks=tiks[0]**expo)
 cb1.set_ticklabels(tiks[0])
-cb1.set_label(r'[kJm$^{-2}$]')
+cb1.set_label(r'[kJ m$^{-2}$]')
 
 qaxs[0,1] = axs[0,1].contourf(param1['x_T'],param1['y_T'],h2mat(D1['eke'],param1),levs[1],cmap=cm.thermal,extend='max')
 cb2 = fig.colorbar(qaxs[0,1],cax=caxs[1],orientation='horizontal',ticks=tiks[1]**expo)
 cb2.set_ticklabels(tiks[1].astype(np.int))
-cb2.set_label(r'[kJm$^{-2}$]')
+cb2.set_label(r'[kJ m$^{-2}$]')
 
 qaxs[0,2] = axs[0,2].contourf(param1['x_T'],param1['y_T'],h2mat(D1['mpe'],param1),levs[2],cmap=cm.thermal,extend='max')
 cb3 = fig.colorbar(qaxs[0,2],cax=caxs[2],orientation='horizontal',ticks=tiks[2]**expo)
 cb3.set_ticklabels(tiks[2])
-cb3.set_label(r'[kJm$^{-2}$]')
+cb3.set_label(r'[kJ m$^{-2}$]')
 
 qaxs[0,3] = axs[0,3].contourf(param1['x_T'],param1['y_T'],h2mat(D1['epe'],param1),levs[3],cmap=cm.thermal,extend='max')
 cb4 = fig.colorbar(qaxs[0,3],cax=caxs[3],orientation='horizontal',ticks=tiks[3]**expo)
 cb4.set_ticklabels(tiks[3])
-cb4.set_label(r'[kJm$^{-2}$]')
+cb4.set_label(r'[kJ m$^{-2}$]')
 
 axs[1,0].contourf(param3['x_T'],param3['y_T'],h2mat(D3['mke'],param3),levs[0],cmap=cm.thermal,extend='max')
 axs[1,1].contourf(param3['x_T'],param3['y_T'],h2mat(D3['eke'],param3),levs[1],cmap=cm.thermal,extend='max')    
@@ -141,12 +141,12 @@ axs[0,3].set_title('EPE',loc='left')
 axs[0,0].set_xticks([])
 axs[0,0].set_yticks([])
 
-axs[0,0].set_xlim(0,param1['Lx'])
-axs[0,0].set_ylim(0,param1['Ly'])
+axs[0,0].set_xlim(15e3,param1['Lx']-15e3) # to avoid a tiny white frame
+axs[0,0].set_ylim(15e3,param1['Ly']-15e3)
 
-axs[0,0].set_ylabel(r'Low resolution, $\Delta x = $30km')
-axs[1,0].set_ylabel(r'LR + moderate backscatter')
-axs[2,0].set_ylabel(r'High resolution, $\Delta x = $7.5km')
+axs[0,0].set_ylabel(r'Low resolution, $\Delta x = $30km',fontsize=11)
+axs[1,0].set_ylabel(r'LR + moderate backscatter',fontsize=11)
+axs[2,0].set_ylabel(r'High resolution, $\Delta x = $7.5km',fontsize=11)
 
 abc = 'abcdefghijkl'
 abci = 0
@@ -170,5 +170,5 @@ axs[1,3].yaxis.set_label_position('right')
 axs[2,3].set_ylabel(r'$y$')
 axs[2,3].yaxis.set_label_position('right')
 
-plt.savefig(outpath+'plots/energymap.png',dpi=150)
+plt.savefig(outpath+'plots/energymap.png',dpi=300)
 plt.close(fig)

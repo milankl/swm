@@ -1,7 +1,7 @@
 ## PLOT STREAMFUNCTION
 from __future__ import print_function
 #path = '/home/mkloewer/python/swm/'
-path = '/home/kloewer/strix/'
+path = '/network/aopp/cirrus/pred/kloewer/swm_bf_cntrl/data/'
 path2 = '/home/kloewer/git/swm/'
 path3 = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'
 outpath = '/network/home/aopp/kloewer/swm/paperplot/'
@@ -16,7 +16,7 @@ plt.rcParams['mathtext.rm'] = 'serif'
 
 
 # OPTIONS
-runfolder = [0,6,2]
+runfolder = [0,6,3]
 print('Compare mean plots from run ' + str(runfolder))
 
 ## read data
@@ -109,12 +109,15 @@ wax.set_yticks([0,1000,2000,3000])
 wax.set_yticklabels([])
 wax.plot(Fx,param['y_u']/s)
 wax.plot([0,0],[0,param['Ly']/s],'grey',lw=0.5)
-wax.set_title('d',fontweight='bold',loc='left')
+#wax.set_title('d',fontweight='bold',loc='left')
+wax.set_title(r'Wind stress $\tau$',loc='left')
+
+
 wax.set_xlabel('[Pa]')
 wax.set_xticks([-0.3,0,0.2])
 wax.set_xticklabels([-0.3,0,0.2])
 
-plt.text(0, 1.1,r'Wind stress $\tau$',fontsize=13,ha='left',transform=wax.transAxes)
+#plt.text(0, 1.1,r'Wind stress $\tau$',fontsize=13,ha='left',transform=wax.transAxes)
 
 for j,i in zip([0,2,1],range(3)):
     strm = axs[j].streamplot(xx[i]/s,yy[i]/s,u[i],v[i],color=speed[i],density=2.5,linewidth=lww[i],arrowstyle='->')
@@ -139,8 +142,8 @@ axs[2].set_title('c',fontweight='bold',loc='left')
 
 #plt.suptitle('Streamlines of mean circulation ($\overline{u},\overline{v}$)',x=0.186,y=0.98)
 
-plt.text(0,1.1,'Streamlines of mean circulation ($\overline{u},\overline{v}$)',fontsize=13,ha='left',transform=axs[0].transAxes)
+#plt.text(0,1.1,'Streamlines of mean circulation ($\overline{u},\overline{v}$)',fontsize=13,ha='left',transform=axs[0].transAxes)
 
 #plt.suptitle(r'wind stress $\tau$',x=0.86,y=0.98)
-plt.savefig(outpath+'plots/streamplot.pdf')
+plt.savefig(outpath+'plots/streamplot.eps')
 plt.close(fig)

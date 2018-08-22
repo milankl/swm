@@ -10,7 +10,7 @@ from cmocean import cm
 plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['mathtext.rm'] = 'serif'
 
-runfolders = [0,2,4]
+runfolders = [0,3,8]
 
 D = []
 p = []
@@ -33,7 +33,7 @@ thermal2 = cm.thermal.from_list('thermal2',np.vstack(([0.5,0.5,0.5,1],cm.thermal
 
 ## plotting
 
-levs = np.linspace(0,np.percentile(np.array(D),98),64)
+levs = np.linspace(0,np.percentile(np.array(D),98),32)
 
 s = 1e3
 
@@ -45,19 +45,23 @@ pos = axs[0].get_position()
 pos2 = axs[-1].get_position()
 cax = fig.add_axes([pos.x0,0.1,pos2.x1-pos.x0,0.03])
 
-titlel = ['weak','moderate','strong']
-
 for i,(iD,ip) in enumerate(zip(D,p)):
     q = axs[i].contourf(ip['x_T']/s,ip['y_T']/s,iD,levs,extend='both',cmap=thermal2)
-    axs[i].set_title('LR + '+titlel[i]+' backscatter') 
+    
+    
+axs[0].set_title('LR + weak backscatter') 
+axs[1].set_title('LR + moderate backscatter') 
+axs[2].set_title('LR + strong backscatter') 
 
-tiks = np.array([0,0.005,0.05,.2,.5,1,1.8,2.4])**expo
+tiks = np.array([0,0.005,0.05,.2,.5,1,1.8,2.4])
 
-cbar = fig.colorbar(q,cax=cax,orientation='horizontal',ticks=tiks)
+cbar = fig.colorbar(q,cax=cax,orientation='horizontal',ticks=tiks**expo)
 cbar.set_label(r'[m$^3$s$^{-2}$]')
-cbar.set_ticklabels(tiks**(1/expo))
+cbar.set_ticklabels(tiks)
 
 axs[0].set_xticks([0,1000,2000,3000])
+axs[1].set_xticks([0,1000,2000,3000])
+axs[2].set_xticks([0,1000,2000,3000])
 axs[0].set_yticks([0,1000,2000,3000])
 
 axs[0].set_title('a',loc='left',fontweight='bold')
@@ -70,5 +74,5 @@ axs[1].set_xlabel(r'$x$ [km]')
 
 plt.suptitle(r'Climatological mean subgrid-EKE $\overline{e}$',x=0.22)
 
-plt.savefig(outpath+'plots/e_mean.png',dpi=150)
+plt.savefig(outpath+'plots/e_mean.png',dpi=300)
 plt.close(fig)

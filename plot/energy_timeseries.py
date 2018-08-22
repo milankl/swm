@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 path1 = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'
-path2 = '/home/kloewer/strix/'
+path2 = '/network/aopp/cirrus/pred/kloewer/swm_bf_cntrl/data/'
 outpath = '/network/home/aopp/kloewer/swm/paperplot/'
 
 import os; os.chdir(path2) # change working directory
@@ -15,7 +15,7 @@ plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['mathtext.rm'] = 'serif'
 
 # OPTIONS
-runfolder = [0,6,0,2,4]
+runfolder = [0,6,0,3,8]
 print('Compare mean plots from run ' + str(runfolder))
 
 ## read data
@@ -51,7 +51,7 @@ def running_mean(x, N):
 
 #fig,((ax1,ax3),(ax2,ax4)) = plt.subplots(2,2,sharex=True,sharey='row',figsize=(8,6))
 
-#fig = plt.figure(figsize=(8,6))
+#fig = plt.figure(figsize=(8,6))parameteri
 #gs = gridspec.GridSpec(2, 2,width_ratios=[20,1])
 
 # fig = plt.figure(figsize=(8,3))
@@ -118,11 +118,11 @@ for i,D in enumerate([D1,D2,D3,D4,D5]):
 # ax4.text(0.2,PEmm[4],"%.1f" % PEmm[4])
 
 #
-ax1.plot(D2['t'],D2['KEm']/1e3,'C2',label=r'High resolution, $\Delta x = $7.5km',lw=3)
-ax1.plot(D1['t'],D1['KEm']/1e3,'C0',label=r'Low resolution, $\Delta x = $30km',lw=3)
-ax1.plot(D3['t'],D3['KEm']/1e3,'C1',label=r'LR + weak backscatter',lw=1)
-ax1.plot(D4['t'],D4['KEm']/1e3,'C3',label=r'LR + moderate backscatter',lw=1)
-ax1.plot(D5['t'],D5['KEm']/1e3,'C5',label=r'LR + strong backscatter',lw=1)
+ax1.plot(D2['t'],D2['KEm']/1e3,'C2',label=r'High resolution, $\Delta x = $7.5km',lw=1.5)
+ax1.plot(D1['t'],D1['KEm']/1e3,'C0',label=r'Low resolution, $\Delta x = $30km',lw=1.5)
+ax1.plot(D3['t'],D3['KEm']/1e3,'C1',label=r'LR + weak backscatter',lw=1.5)
+ax1.plot(D4['t'],D4['KEm']/1e3,'C3',label=r'LR + moderate backscatter',lw=1.5)
+ax1.plot(D5['t'],D5['KEm']/1e3,'C5',label=r'LR + strong backscatter',lw=1.5)
 
 # monthly mean for potential energy
 m = 1
@@ -139,20 +139,23 @@ for D in [D1,D2,D3,D4,D5]:
 # ax2.plot(D4['t'],D4['PEm']/1e3,'C3',lw=1)
 # ax2.plot(D5['t'],D5['PEm']/1e3,'C5',lw=1,zorder=-1)
 
-ax1.add_patch(patches.Rectangle((0,0),5,ax1.get_ylim()[1],color='grey',alpha=.3))
+ax1.add_patch(patches.Rectangle((0,0),5,ax1.get_ylim()[1],color='0.7'))
 # ax2.add_patch(patches.Rectangle((0,0),5,ax2.get_ylim()[1],color='grey',alpha=.3))
 #invisible bar for legend
-ax1.bar(0,0,color='grey',alpha=.3,label='spin-up')
+ax1.bar(0,0,color='0.7',label='spin-up')
 
-ax1.set_title('Kinetic energy')
-ax1.set_title('a',loc='left',fontweight='bold')
-ax1.set_ylabel(r'kJm$^{-2}$')
+ax1.set_title('Kinetic energy',loc='left')
+#ax1.set_title('a',loc='left',fontweight='bold')
+ax1.set_ylabel(r'kJ m$^{-2}$')
+ax1.set_ylim(0,150)
 
 # ax2.set_title('Potential energy PE')
 # ax2.set_title('b',loc='left',fontweight='bold')
 # ax2.set_ylabel(r'kJm$^{-2}$')
 ax1.set_xlabel('time [years]')
 ax1.legend(loc=4,fontsize=8,ncol=3)
+
+#ax1.grid()
 
 # ax3.set_title('c',fontweight='bold')
 # ax4.set_title('d',fontweight='bold')
@@ -164,5 +167,5 @@ ax1.legend(loc=4,fontsize=8,ncol=3)
 # ax4.yaxis.set_label_position('right')
 
 
-plt.savefig(outpath + 'plots/energy_timeseries_ke.pdf')
+plt.savefig(outpath + 'plots/energy_timeseries_ke.eps')
 plt.close(fig)
