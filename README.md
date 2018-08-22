@@ -23,5 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 You may want to change settings in swm_param.py before you run the model. Then simply do
 
      python swm_run.py
+     
+# Energy budget-based backscatter
+
+An implementation of the energy budget-based backscatter as described in Kloewer et al 2018, Ocean Modelling can be found in the separate branch "backscatter".
 
 Copyright (C) 2018,  Milan Kloewer (milan.kloewer@physics.ox.ac.uk, milank.de)
