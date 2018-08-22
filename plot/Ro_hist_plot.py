@@ -4,6 +4,7 @@ from __future__ import print_function
 path = '/network/home/aopp/kloewer/swm/paperplot/'
 path2 = '/network/aopp/cirrus/pred/kloewer/swm_bf_cntrl/'
 path3 = '/network/aopp/cirrus/pred/kloewer/swm_back_ronew/'
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,12 +12,12 @@ plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['mathtext.rm'] = 'serif'
 
 # OPTIONS
-runfolder = [0,6,0,3,8]
-print('Creating Ro histogram plot from run '+str(runfolder)) 
+runfolder = [0,6,0,2,4]
+print('Creating Ro histogram plot from run '+str(runfolder))
 
 ## read data
 runpath = path2+'data/run%04i' % runfolder[0]
-D1 = np.load(runpath+'/analysis/Ro_defo_hist.npy').all()   
+D1 = np.load(runpath+'/analysis/Ro_defo_hist.npy').all()
 
 runpath = path2+'data/run%04i' % runfolder[1]
 D2 = np.load(runpath+'/analysis/Ro_defo_hist.npy').all()
@@ -41,7 +42,7 @@ for D in [D1,D2,D3,D4,D5]:
 
 ## CDISS
 Ro = np.linspace(10**-3.5,10**1.5,10000)
-cd = lambda d: 1/(1+(Ro/d)) 
+cd = lambda d: 1/(1+(Ro/d))
 
 ## PLOT
 fig,(ax1,ax2) = plt.subplots(2,1,figsize=(8,4.5),sharex=True)
@@ -65,15 +66,14 @@ ax1.axvline(np.log10(D5['Ro_mean']),0,ytikmax,c='C5',ls='--')
 ax1.text(np.log10(D1['Ro_mean'])-0.01,1.3,'mean($R_o$)',rotation=90,ha='right',color='k')
 
 ax2.plot(np.log10(Ro),cd(1.),'C1--',label=r'$c_{diss}$ for $R_{diss} = 1$, weak backscatter')
-ax2.plot(np.log10(Ro),cd(8.),'C3--',label=r'$c_{diss}$ for $R_{diss} = 8$, moderate backscatter')
-ax2.plot(np.log10(Ro),cd(64.),'C5--',label=r'$c_{diss}$ for $R_{diss} = 64$, strong backscatter')
-ax2.plot(np.log10(Ro),np.ones_like(Ro),'k',alpha=.5,lw=.7)
+ax2.plot(np.log10(Ro),cd(6.),'C3--',label=r'$c_{diss}$ for $R_{diss} = 6$, moderate backscatter')
+ax2.plot(np.log10(Ro),np.ones_like(Ro),'C5--',label=r'$c_{diss}$ for $R_{diss} = \infty$, strong backscatter')
 
 ax2.plot(np.ones(2)*np.log10(1),[-1,0.5],'C1')
-ax2.plot(np.ones(2)*np.log10(8),[-1,0.5],'C3')
+ax2.plot(np.ones(2)*np.log10(6),[-1,0.5],'C3')
 ax2.text(np.log10(1)-0.03,0.3,r'$R_{diss} = 1$',rotation=90,ha='right',color='k')
-ax2.text(np.log10(8)-0.03,0.3,r'$R_{diss} = 8$',rotation=90,ha='right',color='k')
-ax2.text(-2.9,0.65,r'$c_{diss} = (1 + \frac{R_o}{R_{diss}})^{-1}$', fontsize=15)
+ax2.text(np.log10(6)-0.03,0.3,r'$R_{diss} = 6$',rotation=90,ha='right',color='k')
+ax2.text(-2.9,0.6,r'$c_{diss} = (1 + \frac{R_o}{R_{diss}})^{-1}$', fontsize=15)
 
 ax2.legend(loc=3)
 ax1.legend(loc=1)
@@ -88,16 +88,9 @@ ax1.set_title('Rossby number histogram')
 ax2.set_title('b',loc='left',fontweight='bold')
 ax2.set_title('Rossby number dissipation scaling')
 
-ax2.set_xlabel(r'Rossby number $R_o$')
+ax2.set_xlabel('log$_{10}(R_o)$')
 ax1.set_ylabel(r'$N$ $[10^6]$')
 
-xtik = [-3,-2,-1,0,1]
-xtikm = np.arange(xtik[0],xtik[-1],0.25)
-xtiklab = [r"$10^{-3}$",r"$10^{-2}$",r"$10^{-1}$",r"$10^0$",r"$10^1$"]
-ax2.set_xticks(xtik)
-ax2.set_xticks(xtikm,minor=True)
-ax2.set_xticklabels(xtiklab,fontsize=12)
-
 plt.tight_layout()
-plt.savefig(path+'plots/Ro_hist.eps')
+plt.savefig(path+'plots/Ro_hist.pdf')
 plt.close(fig)

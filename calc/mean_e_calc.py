@@ -6,7 +6,6 @@ import numpy as np
 from scipy import sparse
 import time as tictoc
 from netCDF4 import Dataset
-import glob
 
 # OPTIONS
 runfolder = 15
@@ -24,7 +23,7 @@ try:
     os.mkdir(runpath+'/analysis')
 except:
    pass
-   
+
 ## U,V,H mean
 em = e.mean(axis=0)
 print('e mean done.')
@@ -35,6 +34,6 @@ all_var2export = ['em']
 
 for v in all_var2export:
     exec('dic[v] ='+v)
-    
+
 np.save(runpath+'/analysis/mean_e.npy',dic)
 print('Everything stored.')
