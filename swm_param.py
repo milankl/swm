@@ -1,5 +1,5 @@
 ## SET PARAMETERS
-#
+
 def set_param():
     """ seting up everything necessary for: parameters, grid, coriolis, forcing, initial conditions
         param = set_param() returns a parameter dictionary."""
@@ -37,13 +37,7 @@ def set_param():
 
     # for backscatter
     param['c_back'] = 0.4
-    param['n_diss'] = 4.0
-
-    ## parallel matrix vector multiplication
-    # uncomment the following two lines if _parallel_sparsetools is not available
-    # depending on computing architecture might speed up on 1-4 cores (up to 2.5x faster on some machines)
-    os.environ['OMP_NUM_THREADS'] = str(1)          # change number of cores here
-    sparse.csr_matrix._mul_vector = _mul_vector     # replace the matrix .dot method for convenience
+    param['n_diss'] = 8.0
 
     ## SET UP derived parameters
     set_grid()
@@ -344,15 +338,3 @@ def set_friction():
 
     # for backscatter
     param['nu_e'] = param['nu_A']                           # similar to Jansen et al 2015
-
-def _mul_vector(self, other):
-    M,N = self.shape
-
-    # output array
-    result = np.empty(M, dtype=sparse.sputils.upcast_char(self.dtype.char,
-                                                      other.dtype.char))
-    # csr_matvec or csc_matvec
-    fn = _parallel_sparsetools.csr_matvec
-    fn(M, N, self.indptr, self.indices, self.data, other, result)
-
-    return result
