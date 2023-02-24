@@ -31,3 +31,9 @@ You may want to change settings in swm_param.py before you run the model. Then s
 An implementation of the energy budget-based backscatter as described in Kloewer et al 2018, Ocean Modelling can be found in the separate branch "backscatter".
 
 Copyright (C) 2018,  Milan Kloewer (milan.kloewer@physics.ox.ac.uk, milank.de)
+
+# Citation
+
+If you use this package in your research, please cite us
+
+> Klöwer M, MF Jansen, M Claus, RJ Greatbatch and S Thomsen, 2018. *Energy budget-based backscatter in a shallow water model of a double gyre basin*, __Ocean Modelling__, 132, [10.1016/j.ocemod.2018.09.006](https://doi.org/10.1016/j.ocemod.2018.09.006)
