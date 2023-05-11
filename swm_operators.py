@@ -200,7 +200,7 @@ def set_interp_mat():
     Ivu = (sparse.dia_matrix((d,0),shape=(Nv+nx,Nv)) + \
     sparse.dia_matrix((d,1),shape=(Nv+nx,Nv)) +\
     sparse.dia_matrix((d,-nx+1),shape=(Nv+nx,Nv)) +\
-    sparse.dia_matrix((d,-nx),shape=(Nv+nx,Nv)))[indx1,:]
+    sparse.dia_matrix((d,-nx),shape=(Nv+nx,Nv))).tocsr()[indx1,:]
 
     # interpolate u-points to v-points, 4-point average
     # including the information of the kinematic boundary condition
@@ -211,7 +211,7 @@ def set_interp_mat():
     IqT = (sparse.dia_matrix((d,0),shape=((NT+ny-1,Nq))) +\
     sparse.dia_matrix((d,1),shape=((NT+ny-1,Nq))) +\
     sparse.dia_matrix((d,nx+1),shape=((NT+ny-1,Nq))) +\
-    sparse.dia_matrix((d,nx+2),shape=((NT+ny-1,Nq))))[indx2,:]
+    sparse.dia_matrix((d,nx+2),shape=((NT+ny-1,Nq)))).tocsr()[indx2,:]
 
     # interpolate u-points to T-points, 2-point average
     IuT = abs(Gux*dx/2.)
@@ -229,7 +229,7 @@ def set_interp_mat():
     d = np.ones(Nq)/2.
     indx3 = list(range(Nq-nx-1)); del indx3[::(nx+1)]; del indx3[nx-1::nx]
     Iqu = (sparse.dia_matrix((d,0),shape=((Nq-nx-1,Nq))) +\
-    sparse.dia_matrix((d,nx+1),shape=((Nq-nx-1,Nq))))[indx3,:]
+    sparse.dia_matrix((d,nx+1),shape=((Nq-nx-1,Nq)))).tocsr()[indx3,:]
 
     # interpolate u-points to q-points, 2-point average
     # include lateral boundary condition information in Iqu.T
@@ -241,7 +241,7 @@ def set_interp_mat():
     # same diagonal d as for Iqu, reuse
     indx4 = list(range(Nv+ny-2)); del indx4[nx::(nx+1)]
     Iqv = (sparse.dia_matrix((d,nx+1),shape=((Nv+ny-2,Nq))) +\
-    sparse.dia_matrix((d,nx+2),shape=((Nv+ny-2,Nq))))[indx4,:]
+    sparse.dia_matrix((d,nx+2),shape=((Nv+ny-2,Nq)))).tocsr()[indx4,:]
 
     # interpolate v-points to q-points, 2-point average
     # include lateral boundary condition information in Iqv.T
@@ -350,7 +350,7 @@ def set_arakawa_mat():
     AL1 = (sparse.dia_matrix((2*d,0),shape=(Nq+nx,Nq)) +\
         sparse.dia_matrix((d,1),shape=(Nq+nx,Nq)) +\
         sparse.dia_matrix((d,nx+1),shape=(Nq+nx,Nq)) +\
-        sparse.dia_matrix((2*d,nx+2),shape=(Nq+nx,Nq)))[indx1,:]
+        sparse.dia_matrix((2*d,nx+2),shape=(Nq+nx,Nq))).tocsr()[indx1,:]
 
     # indices to pick from AL1/2 the correct rows for the a,b,c,d linear combination
     # for both U and V components
@@ -364,7 +364,7 @@ def set_arakawa_mat():
     AL2 = (sparse.dia_matrix((d,0),shape=(Nq+nx,Nq)) +\
         sparse.dia_matrix((2*d,1),shape=(Nq+nx,Nq)) +\
         sparse.dia_matrix((2*d,nx+1),shape=(Nq+nx,Nq)) +\
-        sparse.dia_matrix((d,nx+2),shape=(Nq+nx,Nq)))[indx1,:]
+        sparse.dia_matrix((d,nx+2),shape=(Nq+nx,Nq))).tocsr()[indx1,:]
 
     indx_bu = indx_du
     indx_cu = indx_au
@@ -377,14 +377,14 @@ def set_arakawa_mat():
     ALeur = (sparse.dia_matrix((d,0),shape=(NT+ny-1,Nq)) +\
         sparse.dia_matrix((d,1),shape=(NT+ny-1,Nq)) +\
         sparse.dia_matrix((-d,nx+1),shape=(NT+ny-1,Nq)) +\
-        sparse.dia_matrix((-d,nx+2),shape=(NT+ny-1,Nq)))[indx2,:]
+        sparse.dia_matrix((-d,nx+2),shape=(NT+ny-1,Nq))).tocsr()[indx2,:]
 
     # ALeul is the epsilon linear combination to the left of the associated u-point
     indx3 = list(range(NT+ny-1)); del indx3[nx::(nx+1)]; del indx3[::nx]
     ALeul = (sparse.dia_matrix((-d,0),shape=(NT+ny-1,Nq)) +\
         sparse.dia_matrix((-d,1),shape=(NT+ny-1,Nq)) +\
         sparse.dia_matrix((d,nx+1),shape=(NT+ny-1,Nq)) +\
-        sparse.dia_matrix((d,nx+2),shape=(NT+ny-1,Nq)))[indx3,:]
+        sparse.dia_matrix((d,nx+2),shape=(NT+ny-1,Nq))).tocsr()[indx3,:]
 
     # Seur, Seul are shift-matrices so that the correct epsilon term is taken for the associated u-point
     ones = np.ones(Nu)
@@ -408,14 +408,14 @@ def set_arakawa_mat():
     ALpvu = (sparse.dia_matrix((-d,0),shape=(Nq,Nq)) +\
         sparse.dia_matrix((d,1),shape=(Nq,Nq)) +\
         sparse.dia_matrix((-d,nx+1),shape=(Nq,Nq)) +\
-        sparse.dia_matrix((d,nx+2),shape=(Nq,Nq)))[indx5,:]
+        sparse.dia_matrix((d,nx+2),shape=(Nq,Nq))).tocsr()[indx5,:]
 
     # ALpvd is the p linear combination, down
     indx6 = list(range(Nq-nx-1)); del indx6[nx::(nx+1)]; del indx6[:nx]
     ALpvd = (sparse.dia_matrix((d,0),shape=(Nq,Nq)) +\
         sparse.dia_matrix((-d,1),shape=(Nq,Nq)) +\
         sparse.dia_matrix((d,nx+1),shape=(Nq,Nq)) +\
-        sparse.dia_matrix((-d,nx+2),shape=(Nq,Nq)))[indx6,:]
+        sparse.dia_matrix((-d,nx+2),shape=(Nq,Nq))).tocsr()[indx6,:]
 
     # associated shift matrix
     ones = np.ones(Nv)
